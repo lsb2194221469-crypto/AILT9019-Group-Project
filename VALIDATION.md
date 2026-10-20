@@ -10,10 +10,13 @@ Passed:
 - A real local text PDF uploaded successfully and returned readable page text.
 - Missing model selection returned HTTP 400.
 - A cross-origin upload request returned HTTP 403.
+- Headless Chrome browser checks at desktop (1440 px) and mobile (390 px) widths. Screenshots inspected; mobile document width does not overflow the viewport.
+- Sample quiz: incomplete-submission guard, answered-count progress, deliberate wrong answer and expected 1 / 2 objective score, source expansion, wrong-answer filtering and retry.
+- Browser PDF upload and source preview with a real text PDF.
+- No JavaScript runtime errors during the browser walkthrough.
 
 Not yet verified:
 
-- Browser rendering, responsive layout and full browser interaction (no browser runtime available in the execution environment).
 - Live Ollama question generation (no running installed model was found).
 - Three lecture PDFs / 12-question human evaluation against team-written answer keys.
 - Independent setup on a teammate's Windows computer.

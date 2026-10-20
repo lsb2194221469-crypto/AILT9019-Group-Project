@@ -26,9 +26,13 @@ def ollama(path, payload=None):
 
 def extract_pdf(data):
     from pypdf import PdfReader
+    from pypdf.errors import PdfReadError
     if not data.startswith(b'%PDF-'):
         raise ValueError('Please select a valid PDF file.')
-    reader = PdfReader(io.BytesIO(data))
+    try:
+        reader = PdfReader(io.BytesIO(data))
+    except (PdfReadError, OSError, ValueError) as error:
+        raise ValueError('This PDF is damaged or incomplete. Please export it again.') from error
     if reader.is_encrypted:
         raise ValueError('Password-protected PDFs are not supported. Upload an unlocked copy.')
     if len(reader.pages) > 200:
@@ -58,6 +62,9 @@ def validate_questions(items, pages, kind, count):
             continue
         if any(not isinstance(item.get(k), str) or not item[k].strip()
                for k in ('question', 'answer', 'explanation', 'quote')):
+            continue
+        if any(len(item[k]) > limit for k, limit in
+               [('question', 1500), ('answer', 3000), ('explanation', 4000), ('quote', 4000)]):
             continue
         page = item.get('page')
         quote = item['quote'].strip()

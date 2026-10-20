@@ -28,6 +28,7 @@ Without Ollama, click **体验示例测验**. This is a clearly labelled pre-gen
 - Multiple choice, true/false, or short-answer questions; 1–12 items; optional keyword topic filter.
 - Installed model discovery, loading/error states, safe failure if no supported questions are returned.
 - Independent answering, objective scoring, short-answer self-review, explanations and expandable source quotes.
+- Answered-count progress, first-unanswered focus, wrong-answer filtering and retrying the current quiz.
 - Quiz export as JSON; no persistent upload storage, account or paid API key.
 - Responsive Chinese interface; generated questions follow the source language.
 
@@ -59,7 +60,7 @@ Tests cover source provenance, incorrect page/quote rejection, duplicate questio
 - Quote matching verifies provenance, **not answer correctness**. The model can still misunderstand a passage. Users must review answers against sources.
 - The prompt treats documents and topic fields as data and asks the model to skip unsupported material. This reduces risk but does not prove resistance to prompt injection. Adversarial testing remains outstanding.
 - “Local” describes the app's endpoint routing. Use a locally installed model and inspect your Ollama configuration independently.
-- No semantic topic refusal classifier, saved sessions, wrong-answer history or PDF visual page viewer in this first version.
+- No semantic topic refusal classifier, saved sessions, persistent wrong-answer history or PDF visual page viewer in this first version.
 
 ## Next milestones
 
