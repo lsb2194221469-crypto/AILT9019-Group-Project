@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lecture-lab-group61
+    branch: codex/render-online
+    rootDir: web
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
