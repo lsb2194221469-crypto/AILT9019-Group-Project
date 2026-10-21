@@ -1,0 +1,24 @@
+# Local credentials
+config.json
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated files
+.venv/
+venv/
+runtime/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+uploads/
+*.pdf
+*.zip
+
+# Editors / operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

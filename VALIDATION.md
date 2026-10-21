@@ -1,0 +1,7 @@
+# Validation — local DeepSeek edition
+
+15 Python unit tests pass. They cover citation validation, invalid PDFs, model JSON parsing, cloud request format, missing/insecure configuration, redirect rejection, sanitized API errors, mixed-type quotas/duplicates/zero and excessive counts, and PDF superscript/subscript extraction. A synthetic PDF reproduces the old `x2` extraction and verifies the new separate `x^{2}` reading aid without rewriting literal `x2` text or source quotes.
+
+Headless Chrome checks use a separate fixture service and dummy configuration; they never read the owner's real configuration or call a cloud model. Checks cover three sliders and limits, mixed question generation, superscripts and fractions, local fonts, literal HTML safety, raw source quotes, scoring, wrong-answer filtering, retry, JSON export, PDF import and responsive layout at 390px. Real provider generation and the owner's actual problematic PDF have not been tested in this change.
+
+No new cloud deployment is required. `config.json` is excluded from Git and distribution archives; portable packages insert a fresh blank configuration template. Do not share a configured local folder.

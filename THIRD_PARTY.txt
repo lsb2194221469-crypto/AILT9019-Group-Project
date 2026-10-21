@@ -1,0 +1,24 @@
+Portable Windows package components
+
+Python 3.13.16 Windows x64 embeddable distribution
+Source: https://www.python.org/downloads/release/python-31316/
+Download: https://www.python.org/ftp/python/3.13.16/python-3.13.16-embed-amd64.zip
+SHA-256: 97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297
+License: see runtime/LICENSE.txt (Python Software Foundation and included notices).
+
+pypdf 6.21.1 (pure Python wheel, verified against PyPI SHA-256 metadata)
+Source: https://pypi.org/project/pypdf/6.21.1/
+License: BSD-3-Clause; see runtime/site-packages/pypdf-6.21.1.dist-info/licenses/.
+
+Ollama and model weights are not included or required in the DeepSeek API edition.
+
+PyMuPDF 2.0 (Windows x64 ABI3 wheel, verified against PyPI SHA-256 metadata)
+Source: https://pypi.org/project/PyMuPDF/2.0/
+License: GNU Affero General Public License v3; see
+runtime/site-packages/pymupdf-2.0.dist-info/COPYING.
+Uses MuPDF; included distribution notices remain in the bundled package.
+
+KaTeX 0.19.0 (npm release archive, verified against npm SHA-512 integrity)
+Source: https://github.com/KaTeX/KaTeX
+License: MIT; see static/vendor/katex/LICENSE.
+Bundled assets: KaTeX JS/CSS, auto-render extension and WOFF2 fonts.
