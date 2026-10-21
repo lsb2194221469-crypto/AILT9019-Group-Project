@@ -263,6 +263,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, json.loads((ROOT / 'sample.json').read_text(encoding='utf-8')))
             return
         files = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
+                 '/library.js': ('library.js', 'text/javascript'),
                  '/format.js': ('format.js', 'text/javascript'),
                  '/style.css': ('style.css', 'text/css')}
         if self.path.startswith('/vendor/katex/'):
@@ -312,7 +313,9 @@ class Handler(BaseHTTPRequestHandler):
                 with LOCK:
                     pages = DOCUMENTS.get(body.get('document_id'))
                 if not pages:
-                    raise ValueError('Upload your PDF again; the document is no longer in memory.')
+                    self.reply(400, {'error': 'Upload your PDF again; the document is no longer in memory.',
+                                     'code': 'document_expired'})
+                    return
                 count = body.get('count', 4)
                 kind = body.get('type', 'mcq')
                 counts = question_counts(body['counts']) if 'counts' in body else None
