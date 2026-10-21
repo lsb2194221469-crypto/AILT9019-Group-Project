@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const kinds = ['mcq', 'tf', 'short'];
-const workspace = {version: 1, documents: [], quizzes: [], activeDocumentId: null, activeQuizId: null, view: 'create'};
+const workspace = {version: 2, documents: [], groups: [], quizzes: [], activeGroupId: null, activeDocumentId: null, activeQuizId: null, view: 'create'};
 let documentData = null, quiz = null, activeEntry = null, busy = false, booting = true;
 let saveQueue = Promise.resolve(), storageNotice = false, saving = false, pendingSnapshot = null;
 
@@ -23,13 +23,17 @@ async function api(path, options) {
 function counts() { return Object.fromEntries(kinds.map(k => [k, Number($('count-' + k).value)])); }
 function mathNode(tag, text, cls) { return LectureMath.text(node(tag, undefined, cls), text); }
 function findDocument(id) { return workspace.documents.find(doc => doc.id === id); }
-function entriesFor(doc) { return workspace.quizzes.filter(entry => entry.documentId === doc.id); }
+function findGroup(id) { return workspace.groups.find(group => group.id === id); }
+function groupDocs(group) { return group ? group.documentIds.map(findDocument).filter(Boolean) : []; }
+function groupName(group) { return groupDocs(group).map(doc => doc.name).join(' + '); }
+function entriesFor(group) { return workspace.quizzes.filter(entry => entry.groupId === group.id); }
 function currentSettings() { return {counts: counts(), topic: $('topic').value}; }
-function rememberSettings() { if (documentData) documentData.settings = currentSettings(); }
+function rememberSettings() { const group = findGroup(workspace.activeGroupId); if (group) group.settings = currentSettings(); }
 
 function persist() {
   // Exclude temporary server IDs and browser Blob URLs, as well as all API configuration.
   pendingSnapshot = {...workspace,
+    groups: workspace.groups.map(group => ({...group, documentIds: [...group.documentIds]})),
     documents: workspace.documents.map(({serverId, url, ...doc}) => ({...doc})),
     quizzes: workspace.quizzes.map(entry => ({...entry, answers: [...entry.answers], expandedSources: [...entry.expandedSources]}))};
   // Coalesce rapid keystrokes and source toggles while a transaction is pending.
@@ -52,7 +56,7 @@ function persist() {
 function sync() {
   const locked = busy || booting, total = Object.values(counts()).reduce((a, b) => a + b, 0);
   $('generate-btn').disabled = locked || !documentData || !$('model').value || total < 1 || total > 24;
-  for (const id of ['pdf-input', 'replace-btn', 'add-pdfs', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
+  for (const id of ['pdf-input', 'replace-btn', 'source-group', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
   document.querySelectorAll('.pdf-link,.quiz-entry,.document-create,#nav-create,#nav-quiz,#back-btn,#regenerate-btn').forEach(el => el.disabled = locked);
   $('generate-btn').setAttribute('aria-busy', String(busy));
 }
@@ -75,33 +79,29 @@ async function models() {
 function renderLibrary() {
   const list = $('quiz-library'); list.replaceChildren();
   $('quiz-count').textContent = workspace.quizzes.length;
-  if (!workspace.documents.length) list.append(node('p', '添加 PDF 后，测验会按讲义列在这里。', 'library-empty'));
-  for (const doc of workspace.documents) {
-    const entries = entriesFor(doc), group = node('section', undefined, 'pdf-group');
-    group.dataset.documentId = doc.id;
-    const link = node('button', undefined, 'pdf-link'); link.title = doc.name;
-    link.classList.toggle('selected', workspace.activeDocumentId === doc.id);
-    link.append(node('span', 'PDF', 'file-label'), node('span', doc.name, 'pdf-name'), node('small', entries.length + ' 套'));
-    link.onclick = () => {
-      if (busy || booting) return;
-      if (entries.length) openQuiz(entries[entries.length - 1]);
-      else createFor(doc);
-    };
+  for (const sourceGroup of workspace.groups) {
+    const entries = entriesFor(sourceGroup);
+    if (!entries.length) continue;
+    const group = node('section', undefined, 'pdf-group');
+    group.dataset.groupId = sourceGroup.id;
+    const link = node('button', undefined, 'pdf-link'); link.title = groupName(sourceGroup);
+    link.classList.toggle('selected', workspace.activeGroupId === sourceGroup.id);
+    link.append(node('span', 'PDF', 'file-label'), node('span', `${groupDocs(sourceGroup).length} 份讲义 · ${entries.length} 套测验`, 'pdf-name'));
+    link.onclick = () => { if (!busy && !booting) openQuiz(entries[entries.length - 1]); };
     group.append(link);
+    const files = node('ul', undefined, 'group-files');
+    for (const doc of groupDocs(sourceGroup)) files.append(node('li', doc.name));
+    group.append(files);
     const children = node('div', undefined, 'pdf-quizzes');
     for (const entry of entries) {
-      const button = node('button', undefined, 'quiz-entry');
-      button.dataset.quizId = entry.id;
+      const button = node('button', undefined, 'quiz-entry'); button.dataset.quizId = entry.id;
       if (workspace.view === 'quiz' && workspace.activeQuizId === entry.id) button.setAttribute('aria-current', 'page');
       const done = entry.answers.filter(value => value.trim()).length;
       button.append(node('span', entry.title), node('small', `${entry.quiz.questions.length} 题 · ${entry.submitted ? '已完成' : done ? `已答 ${done} 题` : '未作答'}`));
       button.onclick = () => { if (!busy && !booting) openQuiz(entry); };
       children.append(button);
     }
-    if (!entries.length) children.append(node('p', '还没有测验', 'library-empty'));
-    const more = node('button', '＋ 生成新测验', 'document-create');
-    more.onclick = () => { if (!busy && !booting) createFor(doc); };
-    children.append(more); group.append(children); list.append(group);
+    group.append(children); list.append(group);
   }
   const sample = workspace.quizzes.find(entry => entry.quiz.sample);
   if (sample) {
@@ -117,15 +117,28 @@ function showPage() {
 function selectDocument(doc) {
   documentData = doc; workspace.activeDocumentId = doc.id;
   if (!doc.url) doc.url = URL.createObjectURL(doc.file);
-  $('open-pdf').href = doc.url;
-  $('source-picker').hidden = false; $('dropzone').hidden = true; $('document-info').hidden = false;
-  $('source-document').replaceChildren(...workspace.documents.map(d => new Option(d.name, d.id)));
-  $('source-document').value = doc.id;
-  $('filename').textContent = doc.name; $('page-count').textContent = `${doc.pages.length} 页包含可读文字`;
+  $('open-pdf').href = doc.url; $('source-document').value = doc.id;
   $('page-select').replaceChildren(...doc.pages.map(p => new Option(`第 ${p.page} 页`, p.page))); showPage();
-  for (const kind of kinds) $('count-' + kind).value = doc.settings.counts[kind];
-  $('topic').value = doc.settings.topic;
+}
+function selectGroup(group) {
+  workspace.activeGroupId = group.id;
+  const docs = groupDocs(group);
+  $('source-picker').hidden = false; $('dropzone').hidden = true; $('document-info').hidden = false;
+  $('source-group').replaceChildren(...workspace.groups.map(g => new Option(groupName(g), g.id)));
+  $('source-group').value = group.id;
+  $('source-document').replaceChildren(...docs.map(doc => new Option(doc.name, doc.id)));
+  $('source-files').replaceChildren(...docs.map(doc => node('li', doc.name)));
+  $('filename').textContent = `${docs.length} 份讲义 · 联合出题`;
+  $('page-count').textContent = `共 ${docs.reduce((sum, doc) => sum + doc.pages.length, 0)} 页包含可读文字`;
+  selectDocument(docs.find(doc => doc.id === workspace.activeDocumentId) || docs[0]);
+  for (const kind of kinds) $('count-' + kind).value = group.settings.counts[kind];
+  $('topic').value = group.settings.topic;
   $('step-two').classList.add('current'); updateCounts(); sync();
+}
+function startNewGroup() {
+  workspace.activeGroupId = null; workspace.activeDocumentId = null; documentData = null;
+  $('source-picker').hidden = true; $('document-info').hidden = true; $('dropzone').hidden = false;
+  $('step-two').classList.remove('current'); view('create'); persist(); message('');
 }
 function view(which) {
   workspace.view = which;
@@ -135,13 +148,14 @@ function view(which) {
   $('step-three').classList.toggle('current', which === 'quiz');
   renderLibrary();
 }
-function createFor(doc, settings) {
-  if (doc) selectDocument(doc);
+function createFor(group, settings) {
+  if (!group) { startNewGroup(); return; }
+  selectGroup(group);
   if (settings) {
     for (const kind of kinds) $('count-' + kind).value = settings.counts[kind];
     $('topic').value = settings.topic; rememberSettings(); updateCounts();
   }
-  view('create'); persist(); message('设置题目数量后生成新测验，已有测验会保留在对应 PDF 下。');
+  view('create'); persist(); message('设置题目数量后生成新测验，已有测验会保留在这组讲义下。');
 }
 async function readSource(doc) {
   const data = await api('/api/upload', {method: 'POST', headers: {'Content-Type': 'application/pdf'}, body: doc.file});
@@ -149,7 +163,8 @@ async function readSource(doc) {
 }
 async function uploadFiles(files) {
   if (!files.length || busy || booting) return;
-  busy = true; sync(); const failures = []; let first = null;
+  if (files.length > 10) { message('每次最多选择 10 份 PDF，请重新选择。', true); $('pdf-input').value = ''; return; }
+  busy = true; sync(); const failures = []; const documentIds = [];
   try {
     for (const file of files) {
       if (!file.name.toLowerCase().endsWith('.pdf') || file.size > 15 * 1024 * 1024) { failures.push(`${file.name}：请选择不超过 15 MB 的 PDF。`); continue; }
@@ -159,14 +174,17 @@ async function uploadFiles(files) {
         const fingerprint = file.name + ':' + Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
         let doc = workspace.documents.find(d => d.fingerprint === fingerprint);
         if (!doc) {
-          doc = {id: crypto.randomUUID(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString(), settings: {counts: counts(), topic: ''}};
+          doc = {id: crypto.randomUUID(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString()};
           await readSource(doc); workspace.documents.push(doc);
         }
-        first ||= doc;
+        if (!documentIds.includes(doc.id)) documentIds.push(doc.id);
       } catch (e) { failures.push(`${file.name}：${e.message}`); }
     }
-    if (first) { selectDocument(first); view('create'); await persist(); }
-    message(failures.length ? failures.join('\n') : storageNotice ? '讲义已加入本页，但浏览器保存不可用，请导出测验备份。' : '讲义已加入左侧列表。可以多次出题，每次生成都会单独保留。', Boolean(failures.length) || storageNotice);
+    if (documentIds.length) {
+      const group = {id: crypto.randomUUID(), documentIds, createdAt: new Date().toISOString(), settings: currentSettings()};
+      workspace.groups.push(group); selectGroup(group); view('create'); await persist();
+    }
+    message(failures.length ? failures.join('\n') : storageNotice ? '讲义已加入本页，但浏览器保存不可用，请导出测验备份。' : '本次选择的 PDF 已合为一组。生成后会列在“我的测验”下，组内全部文件共同参与出题。', Boolean(failures.length) || storageNotice);
   } finally { busy = false; $('pdf-input').value = ''; renderLibrary(); sync(); }
 }
 
@@ -191,7 +209,7 @@ function renderReview() {
     answer.parentElement.dataset.wrong = String(q.type !== 'short' && values[i] !== q.answer);
     answer.append(node('strong', q.type === 'short' ? '简答题 · 对照原文自行评估' : values[i] === q.answer ? '✓ 回答正确' : '↗ 再看一眼这个知识点'), mathNode('p', `参考答案：${q.answer}`), mathNode('p', q.explanation));
     const details = node('details'); details.open = entry.expandedSources.includes(i);
-    details.append(node('summary', `查看原文依据 · 第 ${q.page} 页`), node('blockquote', q.quote, 'raw-source'), node('p', '请对照原文检查答案。引用匹配不能保证题目和答案完全正确。', 'hint'));
+    details.append(node('summary', `查看原文依据 · ${q.source_name || groupDocs(findGroup(entry.groupId))[0]?.name || '示例'} · 第 ${q.page} 页`), node('blockquote', q.quote, 'raw-source'), node('p', '请对照原文检查答案。引用匹配不能保证题目和答案完全正确。', 'hint'));
     details.addEventListener('toggle', () => {
       entry.expandedSources = entry.expandedSources.filter(index => index !== i);
       if (details.open) entry.expandedSources.push(i);
@@ -207,10 +225,14 @@ function renderReview() {
 function renderQuiz() {
   $('questions').replaceChildren(); $('results').hidden = true; $('submit-btn').hidden = false; $('review-actions').hidden = true;
   $('wrong-btn').setAttribute('aria-pressed', 'false'); $('wrong-btn').textContent = '只看错题';
-  const doc = findDocument(activeEntry.documentId);
-  $('quiz-title').textContent = quiz.sample ? '示例：机器学习基础' : `${doc.name} · ${activeEntry.title}`;
+  const group = findGroup(activeEntry.groupId);
+  $('quiz-title').textContent = quiz.sample ? '示例：机器学习基础' : `${groupName(group)} · ${activeEntry.title}`;
   $('quiz-label').textContent = quiz.sample ? 'PRE-GENERATED SAMPLE · 非实时生成' : 'GENERATED FROM YOUR LECTURE';
-  $('regenerate-btn').hidden = !doc; $('quiz-notice').textContent = quiz.notice;
+  $('quiz-sources').replaceChildren(...groupDocs(group).map(doc => {
+    if (!doc.url) doc.url = URL.createObjectURL(doc.file);
+    const link = node('a', doc.name); link.href = doc.url; link.target = '_blank'; link.rel = 'noopener'; return link;
+  }));
+  $('regenerate-btn').hidden = !group; $('quiz-notice').textContent = quiz.notice;
   quiz.questions.forEach((q, i) => {
     const card = node('article', undefined, 'card question');
     card.append(node('span', `QUESTION ${String(i + 1).padStart(2, '0')} / ${q.type === 'mcq' ? '选择题' : q.type === 'tf' ? '判断题' : '简答题'}`, 'q-number'), mathNode('h3', q.question));
@@ -232,32 +254,37 @@ function renderQuiz() {
 }
 function openQuiz(entry) {
   activeEntry = entry; quiz = entry.quiz; workspace.activeQuizId = entry.id;
-  const doc = findDocument(entry.documentId); if (doc) selectDocument(doc);
+  const group = findGroup(entry.groupId); if (group) selectGroup(group); else workspace.activeGroupId = null;
   renderQuiz(); persist(); message('');
 }
-function addQuiz(data, doc, settings) {
-  const number = doc ? entriesFor(doc).length + 1 : 1;
-  const entry = {id: crypto.randomUUID(), documentId: doc?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: data, settings,
+function addQuiz(data, group, settings) {
+  const number = group ? entriesFor(group).length + 1 : 1;
+  const entry = {id: crypto.randomUUID(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: data, settings,
     answers: data.questions.map(() => ''), submitted: false, wrongOnly: false, expandedSources: []};
   workspace.quizzes.push(entry); openQuiz(entry);
 }
 
 $('generate-btn').onclick = async () => {
   if (busy || booting || !documentData || $('generate-btn').disabled) return;
-  const doc = documentData, settings = currentSettings(), model = $('model').value;
+  const group = findGroup(workspace.activeGroupId), docs = groupDocs(group), settings = currentSettings(), model = $('model').value;
   rememberSettings(); busy = true; sync(); $('generate-btn').textContent = '正在生成，请稍候…';
-  message('正在为当前 PDF 生成新测验。已有测验和作答记录会保留，请保持页面打开。');
+  message('正在根据本组全部 PDF 生成新测验。已有测验和作答记录会保留，请保持页面打开。');
   try {
-    if (!doc.serverId) await readSource(doc);
-    const request = () => api('/api/generate', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({document_id: doc.serverId, model, ...settings})});
+    for (const doc of docs) if (!doc.serverId) await readSource(doc);
+    const request = () => api('/api/generate', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({document_ids: docs.map(doc => doc.serverId), document_names: docs.map(doc => doc.name), model, ...settings})});
     let generated;
     try { generated = await request(); }
     catch (e) {
       if (e.code !== 'document_expired') throw e;
-      await readSource(doc); generated = await request();
+      for (const doc of docs) await readSource(doc);
+      generated = await request();
     }
-    addQuiz(generated, doc, settings); await persist();
-    message(storageNotice ? '新测验已生成，但浏览器保存不可用，请导出备份。' : '新测验已保存到这份 PDF 下，可以继续生成或切换已有测验。', storageNotice);
+    for (const question of generated.questions) {
+      question.source_document_id = docs.find(doc => doc.serverId === question.source_id)?.id || docs[0].id;
+      delete question.source_id;
+    }
+    addQuiz(generated, group, settings); await persist();
+    message(storageNotice ? '新测验已生成，但浏览器保存不可用，请导出备份。' : '新测验已保存到这组讲义下，可以继续生成或切换已有测验。', storageNotice);
   } catch (e) { message(e.message, true); }
   finally { busy = false; $('generate-btn').replaceChildren(document.createTextNode('生成我的练习'), node('span', '→')); sync(); }
 };
@@ -284,15 +311,16 @@ $('submit-btn').onclick = () => {
 };
 $('export-btn').onclick = () => {
   if (!quiz) return;
-  const doc = findDocument(activeEntry.documentId);
-  const data = {...quiz, source_name: doc?.name || null, generated_at: activeEntry.createdAt};
+  const group = findGroup(activeEntry.groupId);
+  const data = {...quiz, source_names: groupDocs(group).map(doc => doc.name), source_name: groupDocs(group).length === 1 ? groupDocs(group)[0].name : null, generated_at: activeEntry.createdAt};
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
-  const a = node('a'); a.href = url; a.download = quiz.sample ? 'sample-quiz.json' : `${doc.name.replace(/\.pdf$/i, '')}-${activeEntry.title}.json`; a.click();
+  const a = node('a'); a.href = url; a.download = quiz.sample ? 'sample-quiz.json' : `lecture-quiz-${activeEntry.title}.json`; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 $('pdf-input').onchange = e => uploadFiles([...e.target.files]);
-$('replace-btn').onclick = $('add-pdfs').onclick = () => $('pdf-input').click();
-$('source-document').onchange = () => { if (!busy) createFor(findDocument($('source-document').value)); };
+$('replace-btn').onclick = () => $('pdf-input').click();
+$('source-group').onchange = () => { if (!busy) createFor(findGroup($('source-group').value)); };
+$('source-document').onchange = () => { if (!busy) selectDocument(findDocument($('source-document').value)); };
 $('page-select').onchange = showPage; $('refresh-models').onclick = models; $('model').onchange = sync;
 function updateCounts() {
   const values = counts(), total = Object.values(values).reduce((a, b) => a + b, 0);
@@ -305,12 +333,13 @@ for (const kind of kinds) $('count-' + kind).oninput = () => { updateCounts(); r
 $('topic').oninput = () => { rememberSettings(); persist(); };
 ['dragenter', 'dragover'].forEach(event => $('dropzone').addEventListener(event, e => { e.preventDefault(); $('dropzone').classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(event => $('dropzone').addEventListener(event, e => { e.preventDefault(); $('dropzone').classList.remove('drag'); if (event === 'drop') uploadFiles([...e.dataTransfer.files]); }));
-$('back-btn').onclick = $('nav-create').onclick = () => { if (!busy && !booting) createFor(documentData); };
-$('regenerate-btn').onclick = () => { if (!busy && activeEntry) createFor(findDocument(activeEntry.documentId), activeEntry.settings); };
+$('back-btn').onclick = () => { if (!busy && !booting) createFor(findGroup(workspace.activeGroupId)); };
+$('nav-create').onclick = () => { if (!busy && !booting) startNewGroup(); };
+$('regenerate-btn').onclick = () => { if (!busy && activeEntry) createFor(findGroup(activeEntry.groupId), activeEntry.settings); };
 $('nav-quiz').onclick = () => {
   if (busy || booting) return;
   const entry = workspace.quizzes.find(item => item.id === workspace.activeQuizId) || workspace.quizzes[workspace.quizzes.length - 1];
-  if (entry) openQuiz(entry); else message('从 PDF 分栏选择讲义并生成测验，或点击“体验示例测验”。');
+  if (entry) openQuiz(entry); else message('请先创建练习并上传 PDF，或点击“体验示例测验”。');
 };
 $('retry-btn').onclick = () => {
   activeEntry.answers = quiz.questions.map(() => ''); activeEntry.submitted = false; activeEntry.wrongOnly = false; activeEntry.expandedSources = [];
@@ -324,13 +353,22 @@ async function initialize() {
   updateCounts(); sync();
   try {
     const saved = await LectureLibrary.read();
-    if (saved?.version === 1 && Array.isArray(saved.documents) && Array.isArray(saved.quizzes)) {
+    if ([1, 2].includes(saved?.version) && Array.isArray(saved.documents) && Array.isArray(saved.quizzes)) {
+      if (saved.version === 1) {
+        // Old records never stored upload batches; keep their existing grouping and answers.
+        saved.groups = saved.documents.map(doc => ({id: crypto.randomUUID(), documentIds: [doc.id], createdAt: doc.createdAt, settings: doc.settings || {counts: counts(), topic: ''}}));
+        for (const entry of saved.quizzes) entry.groupId = saved.groups.find(group => group.documentIds.includes(entry.documentId))?.id || null;
+        saved.activeGroupId = saved.groups.find(group => group.documentIds.includes(saved.activeDocumentId))?.id || null;
+        saved.version = 2;
+      }
       Object.assign(workspace, saved);
       workspace.documents = saved.documents.filter(doc => doc.file instanceof Blob && Array.isArray(doc.pages));
-      workspace.quizzes = saved.quizzes.filter(entry => Array.isArray(entry.quiz?.questions) && (entry.quiz.sample || findDocument(entry.documentId)));
-      const doc = findDocument(workspace.activeDocumentId) || workspace.documents[0]; if (doc) selectDocument(doc);
+      workspace.groups = saved.groups.filter(group => group.documentIds.length && group.documentIds.every(findDocument));
+      workspace.quizzes = saved.quizzes.filter(entry => Array.isArray(entry.quiz?.questions) && (entry.quiz.sample || findGroup(entry.groupId)));
+      const group = findGroup(workspace.activeGroupId); if (group) selectGroup(group);
       const entry = workspace.quizzes.find(item => item.id === workspace.activeQuizId);
       if (entry && workspace.view === 'quiz') { activeEntry = entry; quiz = entry.quiz; renderQuiz(); } else view('create');
+      persist();
     } else renderLibrary();
   } catch (_) { storageNotice = true; message('无法读取此浏览器的测验记录。本页仍可使用，请导出测验备份。', true); renderLibrary(); }
   booting = false; sync(); await models();

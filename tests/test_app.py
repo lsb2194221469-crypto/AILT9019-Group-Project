@@ -57,6 +57,29 @@ class QuizTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Not enough supported'):
                 server.generate(self.pages, 'test-model', 'tf', 1, '')
 
+    def test_batch_citations_keep_pdf_identity_with_overlapping_page_numbers(self):
+        second = {'page': 2, 'text': 'Training data is used to adjust the model parameters during learning.'}
+        pages = server.combine_sources([
+            {'id': 'a', 'name': 'A.pdf', 'pages': self.pages},
+            {'id': 'b', 'name': 'B.pdf', 'pages': [second]}])
+        self.assertEqual([p['page'] for p in pages], [1, 2])
+        items = [self.q | {'type': 'tf', 'page': 1}, self.q | {
+            'type': 'tf', 'page': 2, 'question': 'Does training adjust parameters?',
+            'answer': 'True', 'quote': second['text']}]
+        with patch.object(server, 'read_config', return_value={'model': 'test-model'}), patch.object(server, 'provider_request', return_value={'choices': [{'message': {'content': json.dumps({'questions': items})}}]}):
+            result = server.generate(pages, 'test-model', None, None, '', {'mcq': 0, 'tf': 2, 'short': 0})
+        self.assertEqual([(q['source_name'], q['source_id'], q['page']) for q in result['questions']], [('A.pdf', 'a', 2), ('B.pdf', 'b', 2)])
+        self.assertEqual(server.validate_questions([self.q | {'page': 2}], pages, 'tf', 1), [])
+
+    def test_batch_context_includes_all_ten_pdfs_within_budget(self):
+        pages = server.combine_sources([{'id': str(i), 'name': f'{i}.pdf', 'pages': [{'page': 1, 'text': self.pages[0]['text'] * 100}]} for i in range(10)])
+        item = self.q | {'type': 'tf', 'page': 1}
+        with patch.object(server, 'read_config', return_value={'model': 'test-model'}), patch.object(server, 'provider_request', return_value={'choices': [{'message': {'content': json.dumps({'questions': [item]})}}]}) as mock:
+            server.generate(pages, 'test-model', 'tf', 1, '')
+            selected = json.loads(mock.call_args[0][1]['messages'][1]['content'])['source_pages']
+        self.assertEqual(len({p['source_id'] for p in selected}), 10)
+        self.assertLessEqual(sum(len(p['text']) for p in selected), 22000)
+
 
 if __name__ == '__main__':
     unittest.main()
