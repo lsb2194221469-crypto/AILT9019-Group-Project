@@ -163,28 +163,43 @@ async function readSource(doc) {
 }
 async function uploadFiles(files) {
   if (!files.length || busy || booting) return;
-  if (files.length > 10) { message('每次最多选择 10 份 PDF，请重新选择。', true); $('pdf-input').value = ''; return; }
-  busy = true; sync(); const failures = []; const documentIds = [];
+  if (files.length > 10) { message('每组最多 10 份 PDF，请减少选择数量。', true); $('pdf-input').value = ''; return; }
+  const currentGroup = findGroup(workspace.activeGroupId), previousIds = currentGroup ? [...currentGroup.documentIds] : [];
+  const settings = currentSettings();
+  busy = true; sync(); const failures = [], candidates = [], addedIds = [];
   try {
+    // Count unique files before uploading, so exceeding the group limit keeps the selection intact.
     for (const file of files) {
       if (!file.name.toLowerCase().endsWith('.pdf') || file.size > 15 * 1024 * 1024) { failures.push(`${file.name}：请选择不超过 15 MB 的 PDF。`); continue; }
-      message(`正在读取 ${file.name}…`);
       try {
         const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
         const fingerprint = file.name + ':' + Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
-        let doc = workspace.documents.find(d => d.fingerprint === fingerprint);
-        if (!doc) {
-          doc = {id: crypto.randomUUID(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString()};
-          await readSource(doc); workspace.documents.push(doc);
-        }
-        if (!documentIds.includes(doc.id)) documentIds.push(doc.id);
+        const existing = workspace.documents.find(doc => doc.fingerprint === fingerprint);
+        if ((existing && previousIds.includes(existing.id)) || candidates.some(doc => doc.fingerprint === fingerprint)) continue;
+        candidates.push(existing || {id: crypto.randomUUID(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString()});
       } catch (e) { failures.push(`${file.name}：${e.message}`); }
     }
-    if (documentIds.length) {
-      const group = {id: crypto.randomUUID(), documentIds, createdAt: new Date().toISOString(), settings: currentSettings()};
-      workspace.groups.push(group); selectGroup(group); view('create'); await persist();
+    if (previousIds.length + candidates.length > 10) {
+      message(`当前已选 ${previousIds.length} 份，再选这些文件会超过每组 10 份的上限。已选文件已保留，请减少本次选择。`, true); return;
     }
-    message(failures.length ? failures.join('\n') : storageNotice ? '讲义已加入本页，但浏览器保存不可用，请导出测验备份。' : '本次选择的 PDF 已合为一组。生成后会列在“我的测验”下，组内全部文件共同参与出题。', Boolean(failures.length) || storageNotice);
+    for (const doc of candidates) {
+      message(`正在读取 ${doc.name}…`);
+      try {
+        if (!findDocument(doc.id)) { await readSource(doc); workspace.documents.push(doc); }
+        addedIds.push(doc.id);
+      } catch (e) { failures.push(`${doc.name}：${e.message}`); }
+    }
+    let notice = '这些 PDF 已在当前选择中，没有重复添加。';
+    if (addedIds.length) {
+      const hasHistory = currentGroup && entriesFor(currentGroup).length > 0;
+      // Keep the sources of completed quizzes unchanged when extending a historical group.
+      const group = currentGroup && !hasHistory ? currentGroup : {id: crypto.randomUUID(), createdAt: new Date().toISOString()};
+      group.documentIds = [...previousIds, ...addedIds]; group.settings = settings;
+      if (group !== currentGroup) workspace.groups.push(group);
+      selectGroup(group); view('create'); await persist();
+      notice = hasHistory ? '原讲义与补选 PDF 已组成新组，原有测验和作答保留。还可以继续选择文件。' : `当前已选 ${group.documentIds.length} 份 PDF，可继续选择；生成时使用本组全部文件。`;
+    }
+    message(failures.length ? failures.join('\n') : storageNotice ? '讲义已加入本页，但浏览器保存不可用，请导出测验备份。' : notice, Boolean(failures.length) || storageNotice);
   } finally { busy = false; $('pdf-input').value = ''; renderLibrary(); sync(); }
 }
 
