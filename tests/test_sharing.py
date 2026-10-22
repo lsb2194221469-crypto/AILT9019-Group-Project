@@ -25,9 +25,10 @@ class SharingTests(unittest.TestCase):
     def tearDown(self):
         self.httpd.shutdown(); self.httpd.server_close(); self.worker.join()
 
-    def request(self, path, host='192.168.50.7:8765', data=None, origin=None):
+    def request(self, path, host='192.168.50.7:8765', data=None, origin=None, extra_headers=None):
         connection = http.client.HTTPConnection('127.0.0.1', self.httpd.server_port)
         headers = {'Host': host}
+        headers.update(extra_headers or {})
         if origin:
             headers['Origin'] = origin
         connection.request('POST' if data is not None else 'GET', path,
@@ -68,6 +69,25 @@ class SharingTests(unittest.TestCase):
                 patch.object(launch.socket, 'socket') as sock:
             sock.return_value.__enter__.return_value.getsockname.return_value = ('192.168.50.7', 0)
             self.assertEqual(launch.lan_addresses(), ['192.168.50.7'])
+
+    def test_public_https_origin_must_match_explicit_public_host(self):
+        host = 'notes-demo.trycloudflare.com'
+        self.httpd.public_origin = 'https://' + host
+        self.httpd.allowed_hosts.add(host)
+        self.assertEqual(self.request('/', host=host)[0], 200)
+        self.assertEqual(self.request('/api/generate', host=host, data={'document_ids': []}, origin='https://' + host)[0], 400)
+        self.assertEqual(self.request('/api/generate', host=host, data={}, origin='https://attacker.example')[0], 403)
+        self.assertEqual(self.request('/api/generate', host='127.0.0.1:8765', data={}, origin='https://' + host)[0], 403)
+
+    def test_owner_stop_requires_local_host_and_private_token(self):
+        self.httpd.owner_stop_token = 'test-owner-stop'
+        self.httpd.stop_requested = threading.Event()
+        headers = {'X-Lecture-Owner': 'test-owner-stop'}
+        self.assertEqual(self.request('/api/owner/shutdown', data={}, extra_headers=headers)[0], 403)
+        self.assertEqual(self.request('/api/owner/shutdown', host='127.0.0.1:8765', data={})[0], 403)
+        self.assertFalse(self.httpd.stop_requested.is_set())
+        self.assertEqual(self.request('/api/owner/shutdown', host='127.0.0.1:8765', data={}, extra_headers=headers)[0], 200)
+        self.assertTrue(self.httpd.stop_requested.is_set())
 
 
 if __name__ == '__main__':

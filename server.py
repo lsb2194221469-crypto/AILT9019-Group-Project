@@ -279,7 +279,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == '/api/health':
             self.reply(200, {'app': 'lecture-lab-local', 'status': 'ok',
                              'sharing': bool(getattr(self.server, 'sharing', False)),
-                             'share_urls': getattr(self.server, 'share_urls', [])})
+                             'share_urls': getattr(self.server, 'share_urls', []),
+                             'public_url': getattr(self.server, 'public_origin', None)})
             return
         if self.path == '/api/models':
             try:
@@ -322,8 +323,23 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(403, {'error': 'Invalid host'})
             return
         origin = self.headers.get('Origin')
-        if origin and origin != 'http://' + self.headers.get('Host', '').lower():
+        host = self.headers.get('Host', '').lower()
+        allowed_origins = {'http://' + host}
+        public_origin = getattr(self.server, 'public_origin', '')
+        if public_origin and urllib.parse.urlsplit(public_origin).netloc == host:
+            allowed_origins.add(public_origin)
+        if origin and origin not in allowed_origins:
             self.reply(403, {'error': 'Cross-origin requests are not allowed'})
+            return
+        if self.path == '/api/owner/shutdown':
+            token = getattr(self.server, 'owner_stop_token', None)
+            supplied = self.headers.get('X-Lecture-Owner', '')
+            if (host != '127.0.0.1:8765' or self.client_address[0] != '127.0.0.1'
+                    or not token or not secrets.compare_digest(token, supplied)):
+                self.reply(403, {'error': 'Owner access required'})
+                return
+            self.reply(200, {'stopping': True})
+            self.server.stop_requested.set()
             return
         try:
             length = int(self.headers.get('Content-Length', '0'))

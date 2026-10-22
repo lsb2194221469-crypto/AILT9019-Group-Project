@@ -1,5 +1,8 @@
 # Local credentials
 config.json
+.public-session.json
+.public-session.tmp
+打开出题网页.url
 .env
 .env.*
 !.env.example

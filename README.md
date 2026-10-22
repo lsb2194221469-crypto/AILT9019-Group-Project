@@ -1,8 +1,18 @@
 # Lecture Lab · AILT9019 Group 61
 
+<!-- PUBLIC_ENTRY_START -->
+## [▶ 打开出题网页](https://west-stating-nurses-activities.trycloudflare.com)
+
+访客点击上方链接即可上传 PDF、生成练习。无需下载项目、安装 Python 或填写 API Key。
+
+出题使用项目主机的 API 额度。主机和外网服务须保持运行；临时地址重启后会变化。
+<!-- PUBLIC_ENTRY_END -->
+
 **上传课程 PDF，一次生成选择、判断和简答的混合练习，并查看答案、解析与原文出处。**
 
 Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSeek / OpenAI-compatible API. 界面运行在自己的电脑，出题调用云端模型，无需部署网站或安装 Ollama。
+
+访客使用仓库顶部的网页入口即可。下面的安装和 API 配置步骤只面向自行运行源码或维护主机的人。
 
 ## 快速导航
 
@@ -38,6 +48,16 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 ### 已有 Windows 便携包
 
 完整便携包包含 `runtime/`，解压后直接运行 `start.bat`，无需自行安装 Python。**GitHub 的 Download ZIP 是源码包，不包含运行时**。维护者可按下文命令生成便携包。
+
+### 主机：让其他人从 GitHub 直接打开网页
+
+访客只需点击仓库顶部“打开出题网页”，无需下载程序、安装依赖或填写 API Key；可跨网络访问。当前服务由维护者电脑运行，出题统一消耗主机配置的 API 额度。
+
+- 主机关闭旧的本地启动窗口，再双击 `public.bat`；首次会下载并校验官方 Cloudflare 隧道程序，后续复用。
+- 把启动窗口打印的 `PUBLIC_URL` 发布到 GitHub 首页入口；本地 README 与 `打开出题网页.md` 会自动更新，但重启后仍需把变化同步到 GitHub。
+- 主机保持开机并运行服务。`stop_public.bat` 可关闭公开服务及对应隧道；停止操作仅接受本机私有令牌。
+- 隧道提供临时 HTTPS 地址，不需要访客与主机处于同一网络，也不需要访客安装隧道工具。它没有持续在线保证，每次重启地址会变化；固定网址和长期托管需要另行配置。
+- 公网模式仅绑定本机回环端口，由隧道接入。密钥只在主机配置文件中，不放进 GitHub、启动文件或浏览器。
 
 ### 同一局域网共享你的 API 额度
 
@@ -132,6 +152,9 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 ├── launch.py              # 启动本地服务、检查端口、打开浏览器
 ├── start.bat              # 本机运行入口，支持便携运行时或虚拟环境
 ├── share.bat              # 同一局域网共享入口，使用主机的 API 账户
+├── public.bat             # 主机公开网页入口；访客只点 GitHub 网页链接
+├── public_host.py         # 校验官方隧道、管理公开服务与关闭操作
+├── stop_public.bat        # 关闭本机公开服务及隧道
 ├── configure.bat          # 在记事本编辑本机配置
 ├── check_connection.py    # API 连接检查，不发送讲义
 ├── config.example.json    # 可公开分享的空白配置模板
@@ -159,7 +182,7 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 python -m unittest discover -s tests -v
 ```
 
-目前 20 项单元测试通过，覆盖引用、题型配额、模型返回格式、API 异常、上下标提取等。桌面/手机浏览器检查还覆盖同次多 PDF 联合出题与文件归属、分多次补选与新资料组分栏、旧记录迁移、重复生成、独立进度/评分、刷新恢复、来源缓存失效恢复、生成失败后保留历史记录，以及公式排版。浏览器检查使用模拟接口，不消耗模型额度；本次同步未验证真实 API 的生成质量。
+目前 22 项单元测试通过，覆盖引用、题型配额、模型返回格式、API 异常、上下标提取等。桌面/手机浏览器检查还覆盖同次多 PDF 联合出题与文件归属、分多次补选与新资料组分栏、旧记录迁移、重复生成、独立进度/评分、刷新恢复、来源缓存失效恢复、生成失败后保留历史记录，以及公式排版。浏览器检查使用模拟接口，不消耗模型额度；另通过公开 HTTPS 入口上传合成 PDF 并调用真实 DeepSeek 生成 1 道题、完成作答；这是链路检查，不是出题质量基准评测。
 
 如本机装有 Node.js，可额外检查脚本语法：
 
