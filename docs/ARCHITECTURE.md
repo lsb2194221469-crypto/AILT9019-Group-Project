@@ -9,7 +9,7 @@
 5. `generate()` 选取讲义页，从本机 `config.json` 读取配置，在服务端调用兼容的 `chat/completions` 接口。原文最多 22,000 字符，公式提示另有最多 22,000 字符预算。
 6. `validate_mixed()` 校验题型配额、去重、答案结构及引用匹配，只返回通过检查的题目。
 7. 每次成功生成创建独立测验，关联到当前上传资料组。组内 PDF 联合出题，后端交错取页，并为多个 PDF 的重叠页码分配唯一内部引用 ID；通过引用校验后，再还原实际文件名和页码。浏览器通过 `format.js` 渲染公式。客观题按原始选项值计分；简答题展示参考答案供自评，原文引用保持文本。
-8. `library.js` 将 PDF Blob、提取页、各资料组设置及每套题的答案/提交状态/错题筛选/原文展开状态保存到 IndexedDB。临时服务端文档 ID、Blob URL 和 API 配置不持久化。刷新后恢复当前讲义及测验；服务端来源缓存失效时，生成接口返回 `document_expired`，前端重新读取已保存的 PDF 后重试一次，不重新调用已经成功完成的模型请求。
+8. `library.js` 将 PDF Blob、提取页、各资料组设置及每套题的答案/提交状态/错题筛选/原文展开状态保存到 IndexedDB。临时服务端文档 ID、Blob URL 和 API 配置不持久化。保存时先深拷贝快照，再在同一读写事务中读取最新记录，按 ID 合并本标签页相对上次保存发生的修改；不再用旧标签页的整个工作区覆盖数据库。删除通过 `deletedQuizIds` 墓碑集合持久化，合并取并集，旧页面不能恢复已删测验。删除仅影响所选整套练习及作答，保留源 PDF；资料组记录生成序号，删除后继续生成也不复用旧序号。刷新后恢复当前讲义及测验；服务端来源缓存失效时，生成接口返回 `document_expired`，前端重新读取已保存的 PDF 后重试一次，不重新调用已经成功完成的模型请求。
 
 ## 文件职责
 
@@ -19,7 +19,7 @@
 | `pdf_math.py` | 根据较小字号与上下位移识别脚标，提示和引用分开保存，不推断普通 `x2` |
 | `static/app.js` | 资料组分栏与分次补选、每组 PDF 的多套联合测验、独立作答状态、生成请求、提交评分和导出 |
 | `static/platform.js` | 兼容普通 LAN HTTP 没有 SubtleCrypto/randomUUID 的环境；文件 SHA-256 用于去重，UUID 使用 getRandomValues |
-| `static/library.js` | 当前浏览器 IndexedDB 的单工作区读写，保存队列由 `app.js` 管理 |
+| `static/library.js` | 当前浏览器 IndexedDB 事务内按记录合并、删除墓碑，保存队列由 `app.js` 管理 |
 | `static/format.js` | `textContent` 输入、显式数学记号预处理、KaTeX autorender，禁止信任模型 HTML |
 | `tests/` | API 请求和错误处理、题目与引用规则、混合题限制、PDF 脚标复现 |
 
@@ -47,7 +47,7 @@
 
 保留旧请求的单文档 `document_id` 与单题型 `type/count` 兼容路径；新界面发送 `document_ids/document_names/counts`。一组最多 10 份 PDF，组内全部参与选页；预览下拉框仅切换预览文件。
 
-浏览器工作区 payload version 2 增加 `groups`，每组含 `documentIds/settings`，每套题通过 `groupId` 关联。version 1 未记录历史选择批次，因此迁移时保留原来的单 PDF 分组，不猜测合并历史记录；答案和评分等保持不变。IndexedDB 的数据库结构版本无需升级。
+浏览器工作区 payload version 2 增加 `groups`，每组含 `documentIds/settings`，每套题通过 `groupId` 关联。`deletedQuizIds` 与资料组 `lastQuizNumber` 为兼容的可选字段，旧记录默认空集合并从已有练习标题计算序号。version 1 未记录历史选择批次，因此迁移时保留原来的单 PDF 分组，不猜测合并历史记录；答案和评分等保持不变。IndexedDB 的数据库结构版本无需升级。
 
 ## 边界与限制
 
@@ -71,3 +71,5 @@
 公开会话文件 `.public-session.json` 含随机的本机关闭令牌，不属于分发或 GitHub 内容。`stop_public.bat` 通过回环地址、127.0.0.1 Host 和私有令牌调用关闭接口，停止主机自己创建的隧道子进程。公开 Host 或无令牌请求不能关闭服务。HTTP 服务仍只提供固定的静态文件映射，不能读取配置及会话文件。
 
 本地 `README.md` 与 `打开出题网页.md` 在新地址生成后更新；仓库发布由维护者同步。无账号 Quick Tunnel 的域名不持久，不应声称为固定托管地址。原文件上传、题目与 IndexedDB 逻辑不变；不同域名使用不同的浏览器记录。
+
+历史保存和删除回归可用 `node tests/test_history_browser.cjs` 运行。需另装 Node.js 与 Playwright/Chrome（仅开发测试需要，普通用户不需要）；可通过 `LECTURE_LAB_PYTHON`、`LECTURE_LAB_PLAYWRIGHT`、`LECTURE_LAB_CHROME` 指定路径。该检查使用独立浏览器环境、合成 PDF 和模拟服务，既不读取 `config.json` 也不调用真实模型。

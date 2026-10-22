@@ -1,14 +1,22 @@
 const $ = id => document.getElementById(id);
 const kinds = ['mcq', 'tf', 'short'];
-const workspace = {version: 2, documents: [], groups: [], quizzes: [], activeGroupId: null, activeDocumentId: null, activeQuizId: null, view: 'create'};
+const workspace = {version: 2, documents: [], groups: [], quizzes: [], deletedQuizIds: [], activeGroupId: null, activeDocumentId: null, activeQuizId: null, view: 'create'};
 let documentData = null, quiz = null, activeEntry = null, busy = false, booting = true;
 let saveQueue = Promise.resolve(), storageNotice = false, saving = false, pendingSnapshot = null;
+let deleteTargetId = null;
 
 function node(tag, text, cls) {
   const el = document.createElement(tag);
   if (text !== undefined) el.textContent = text;
   if (cls) el.className = cls;
   return el;
+}
+function trashIcon() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(svg.namespaceURI, 'path');
+  path.setAttribute('d', 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7');
+  svg.append(path); return svg;
 }
 function message(text, error = false) {
   $('message').hidden = !text;
@@ -32,10 +40,10 @@ function rememberSettings() { const group = findGroup(workspace.activeGroupId); 
 
 function persist() {
   // Exclude temporary server IDs and browser Blob URLs, as well as all API configuration.
-  pendingSnapshot = {...workspace,
+  pendingSnapshot = structuredClone({...workspace,
     groups: workspace.groups.map(group => ({...group, documentIds: [...group.documentIds]})),
     documents: workspace.documents.map(({serverId, url, ...doc}) => ({...doc})),
-    quizzes: workspace.quizzes.map(entry => ({...entry, answers: [...entry.answers], expandedSources: [...entry.expandedSources]}))};
+    quizzes: workspace.quizzes.map(entry => ({...entry, answers: [...entry.answers], expandedSources: [...entry.expandedSources]}))});
   // Coalesce rapid keystrokes and source toggles while a transaction is pending.
   if (!saving) {
     saving = true;
@@ -57,7 +65,7 @@ function sync() {
   const locked = busy || booting, total = Object.values(counts()).reduce((a, b) => a + b, 0);
   $('generate-btn').disabled = locked || !documentData || !$('model').value || total < 1 || total > 24;
   for (const id of ['pdf-input', 'replace-btn', 'source-group', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
-  document.querySelectorAll('.pdf-link,.quiz-entry,.document-create,#nav-create,#nav-quiz,#back-btn,#regenerate-btn').forEach(el => el.disabled = locked);
+  document.querySelectorAll('.pdf-link,.quiz-entry,.quiz-delete,.document-create,#nav-create,#nav-quiz,#back-btn,#regenerate-btn,#delete-quiz-btn').forEach(el => el.disabled = locked);
   $('generate-btn').setAttribute('aria-busy', String(busy));
 }
 async function models() {
@@ -99,7 +107,12 @@ function renderLibrary() {
       const done = entry.answers.filter(value => value.trim()).length;
       button.append(node('span', entry.title), node('small', `${entry.quiz.questions.length} 题 · ${entry.submitted ? '已完成' : done ? `已答 ${done} 题` : '未作答'}`));
       button.onclick = () => { if (!busy && !booting) openQuiz(entry); };
-      children.append(button);
+      const row = node('div', undefined, 'quiz-row');
+      const remove = node('button', undefined, 'quiz-delete');
+      remove.title = `删除 ${entry.title}`;
+      remove.setAttribute('aria-label', `删除 ${entry.title}（${groupName(sourceGroup)}）`);
+      remove.append(trashIcon()); remove.onclick = () => requestDeleteQuiz(entry);
+      row.append(button, remove); children.append(row);
     }
     group.append(children); list.append(group);
   }
@@ -107,7 +120,11 @@ function renderLibrary() {
   if (sample) {
     const link = node('button', '示例：机器学习基础', 'quiz-entry sample-entry');
     if (workspace.view === 'quiz' && workspace.activeQuizId === sample.id) link.setAttribute('aria-current', 'page');
-    link.onclick = () => { if (!busy && !booting) openQuiz(sample); }; list.append(link);
+    link.onclick = () => { if (!busy && !booting) openQuiz(sample); };
+    const row = node('div', undefined, 'quiz-row sample-entry'); link.classList.remove('sample-entry');
+    const remove = node('button', undefined, 'quiz-delete'); remove.title = '删除示例测验';
+    remove.setAttribute('aria-label', '删除示例测验'); remove.append(trashIcon());
+    remove.onclick = () => requestDeleteQuiz(sample); row.append(link, remove); list.append(row);
   }
   sync();
 }
@@ -272,10 +289,40 @@ function openQuiz(entry) {
   renderQuiz(); persist(); message('');
 }
 function addQuiz(data, group, settings) {
-  const number = group ? entriesFor(group).length + 1 : 1;
-  const entry = {id: LecturePlatform.id(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: data, settings,
+  // Keep the sequence increasing after deletion and make each generation an
+  // independent snapshot, including its questions and generation settings.
+  const number = group ? Math.max(group.lastQuizNumber || 0, ...entriesFor(group).map(entry => Number(entry.title.match(/\d+$/)?.[0]) || 0)) + 1 : 1;
+  if (group) group.lastQuizNumber = number;
+  const entry = {id: LecturePlatform.id(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: structuredClone(data), settings: settings ? structuredClone(settings) : null,
     answers: data.questions.map(() => ''), submitted: false, wrongOnly: false, expandedSources: []};
   workspace.quizzes.push(entry); openQuiz(entry);
+}
+
+function requestDeleteQuiz(entry) {
+  if (busy || booting) return;
+  deleteTargetId = entry.id;
+  $('delete-description').textContent = `将删除“${entry.quiz.sample ? '示例测验' : entry.title}”的 ${entry.quiz.questions.length} 道题及其作答记录。其他测验和 PDF 会保留。`;
+  $('delete-source').textContent = groupName(findGroup(entry.groupId));
+  $('delete-dialog').showModal(); $('delete-cancel').focus();
+}
+async function deleteQuiz(id) {
+  const index = workspace.quizzes.findIndex(entry => entry.id === id);
+  if (index < 0) return;
+  const removed = workspace.quizzes[index];
+  workspace.deletedQuizIds = [...new Set([...workspace.deletedQuizIds, id])];
+  workspace.quizzes.splice(index, 1);
+  if (activeEntry?.id === id || workspace.activeQuizId === id) {
+    const siblings = workspace.quizzes.filter(entry => entry.groupId === removed.groupId);
+    const next = siblings[siblings.length - 1] || workspace.quizzes[Math.min(index, workspace.quizzes.length - 1)];
+    activeEntry = null; quiz = null; workspace.activeQuizId = null;
+    if (next) openQuiz(next);
+    else {
+      $('questions').replaceChildren(); $('quiz-sources').replaceChildren();
+      createFor(findGroup(removed.groupId));
+    }
+  }
+  renderLibrary(); await persist();
+  message(storageNotice ? '本页已删除测验，但浏览器保存失败，刷新后可能恢复。' : '已删除所选测验，其他测验和 PDF 已保留。', storageNotice);
 }
 
 $('generate-btn').onclick = async () => {
@@ -350,6 +397,11 @@ $('topic').oninput = () => { rememberSettings(); persist(); };
 $('back-btn').onclick = () => { if (!busy && !booting) createFor(findGroup(workspace.activeGroupId)); };
 $('nav-create').onclick = () => { if (!busy && !booting) startNewGroup(); };
 $('regenerate-btn').onclick = () => { if (!busy && activeEntry) createFor(findGroup(activeEntry.groupId), activeEntry.settings); };
+$('delete-quiz-btn').append(trashIcon(), document.createTextNode('删除测验'));
+$('delete-quiz-btn').onclick = () => { if (activeEntry) requestDeleteQuiz(activeEntry); };
+$('delete-cancel').onclick = () => $('delete-dialog').close();
+$('delete-confirm').onclick = () => { const id = deleteTargetId; $('delete-dialog').close(); if (id) deleteQuiz(id); };
+$('delete-dialog').addEventListener('close', () => { deleteTargetId = null; });
 $('nav-quiz').onclick = () => {
   if (busy || booting) return;
   const entry = workspace.quizzes.find(item => item.id === workspace.activeQuizId) || workspace.quizzes[workspace.quizzes.length - 1];
@@ -376,9 +428,10 @@ async function initialize() {
         saved.version = 2;
       }
       Object.assign(workspace, saved);
+      workspace.deletedQuizIds = Array.isArray(saved.deletedQuizIds) ? saved.deletedQuizIds : [];
       workspace.documents = saved.documents.filter(doc => doc.file instanceof Blob && Array.isArray(doc.pages));
       workspace.groups = saved.groups.filter(group => group.documentIds.length && group.documentIds.every(findDocument));
-      workspace.quizzes = saved.quizzes.filter(entry => Array.isArray(entry.quiz?.questions) && (entry.quiz.sample || findGroup(entry.groupId)));
+      workspace.quizzes = saved.quizzes.filter(entry => !workspace.deletedQuizIds.includes(entry.id) && Array.isArray(entry.quiz?.questions) && (entry.quiz.sample || findGroup(entry.groupId)));
       const group = findGroup(workspace.activeGroupId); if (group) selectGroup(group);
       const entry = workspace.quizzes.find(item => item.id === workspace.activeQuizId);
       if (entry && workspace.view === 'quiz') { activeEntry = entry; quiz = entry.quiz; renderQuiz(); } else view('create');
