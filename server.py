@@ -1,4 +1,4 @@
-"""Lecture Lab: loopback-only PDF-to-quiz application."""
+"""Lecture Lab: local PDF-to-quiz application with optional LAN sharing."""
 import io
 import json
 import re
@@ -259,6 +259,10 @@ FORMAT MATH: In question, answer, explanation and mcq options, use valid LaTeX d
 
 
 class Handler(BaseHTTPRequestHandler):
+    def valid_host(self):
+        return self.headers.get('Host', '').lower() in getattr(
+            self.server, 'allowed_hosts', {'127.0.0.1:8765', 'localhost:8765'})
+
     def reply(self, status, body):
         data = json.dumps(body, ensure_ascii=False).encode()
         self.send_response(status)
@@ -269,11 +273,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
-        if self.headers.get('Host') not in ('127.0.0.1:8765', 'localhost:8765'):
+        if not self.valid_host():
             self.reply(403, {'error': 'Invalid host'})
             return
         if self.path == '/api/health':
-            self.reply(200, {'app': 'lecture-lab-local', 'status': 'ok'})
+            self.reply(200, {'app': 'lecture-lab-local', 'status': 'ok',
+                             'sharing': bool(getattr(self.server, 'sharing', False)),
+                             'share_urls': getattr(self.server, 'share_urls', [])})
             return
         if self.path == '/api/models':
             try:
@@ -287,6 +293,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         files = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
                  '/library.js': ('library.js', 'text/javascript'),
+                 '/platform.js': ('platform.js', 'text/javascript'),
                  '/format.js': ('format.js', 'text/javascript'),
                  '/style.css': ('style.css', 'text/css')}
         if self.path.startswith('/vendor/katex/'):
@@ -311,11 +318,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         # Reject cross-origin requests before reading potentially sensitive input.
-        if self.headers.get('Host') not in ('127.0.0.1:8765', 'localhost:8765'):
+        if not self.valid_host():
             self.reply(403, {'error': 'Invalid host'})
             return
         origin = self.headers.get('Origin')
-        if origin and origin not in ('http://127.0.0.1:8765', 'http://localhost:8765'):
+        if origin and origin != 'http://' + self.headers.get('Host', '').lower():
             self.reply(403, {'error': 'Cross-origin requests are not allowed'})
             return
         try:

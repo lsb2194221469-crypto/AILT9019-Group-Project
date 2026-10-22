@@ -172,11 +172,10 @@ async function uploadFiles(files) {
     for (const file of files) {
       if (!file.name.toLowerCase().endsWith('.pdf') || file.size > 15 * 1024 * 1024) { failures.push(`${file.name}：请选择不超过 15 MB 的 PDF。`); continue; }
       try {
-        const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-        const fingerprint = file.name + ':' + Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
+        const fingerprint = await LecturePlatform.fingerprint(file);
         const existing = workspace.documents.find(doc => doc.fingerprint === fingerprint);
         if ((existing && previousIds.includes(existing.id)) || candidates.some(doc => doc.fingerprint === fingerprint)) continue;
-        candidates.push(existing || {id: crypto.randomUUID(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString()});
+        candidates.push(existing || {id: LecturePlatform.id(), fingerprint, name: file.name, file, pages: [], createdAt: new Date().toISOString()});
       } catch (e) { failures.push(`${file.name}：${e.message}`); }
     }
     if (previousIds.length + candidates.length > 10) {
@@ -193,7 +192,7 @@ async function uploadFiles(files) {
     if (addedIds.length) {
       const hasHistory = currentGroup && entriesFor(currentGroup).length > 0;
       // Keep the sources of completed quizzes unchanged when extending a historical group.
-      const group = currentGroup && !hasHistory ? currentGroup : {id: crypto.randomUUID(), createdAt: new Date().toISOString()};
+      const group = currentGroup && !hasHistory ? currentGroup : {id: LecturePlatform.id(), createdAt: new Date().toISOString()};
       group.documentIds = [...previousIds, ...addedIds]; group.settings = settings;
       if (group !== currentGroup) workspace.groups.push(group);
       selectGroup(group); view('create'); await persist();
@@ -274,7 +273,7 @@ function openQuiz(entry) {
 }
 function addQuiz(data, group, settings) {
   const number = group ? entriesFor(group).length + 1 : 1;
-  const entry = {id: crypto.randomUUID(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: data, settings,
+  const entry = {id: LecturePlatform.id(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: data, settings,
     answers: data.questions.map(() => ''), submitted: false, wrongOnly: false, expandedSources: []};
   workspace.quizzes.push(entry); openQuiz(entry);
 }
@@ -371,7 +370,7 @@ async function initialize() {
     if ([1, 2].includes(saved?.version) && Array.isArray(saved.documents) && Array.isArray(saved.quizzes)) {
       if (saved.version === 1) {
         // Old records never stored upload batches; keep their existing grouping and answers.
-        saved.groups = saved.documents.map(doc => ({id: crypto.randomUUID(), documentIds: [doc.id], createdAt: doc.createdAt, settings: doc.settings || {counts: counts(), topic: ''}}));
+        saved.groups = saved.documents.map(doc => ({id: LecturePlatform.id(), documentIds: [doc.id], createdAt: doc.createdAt, settings: doc.settings || {counts: counts(), topic: ''}}));
         for (const entry of saved.quizzes) entry.groupId = saved.groups.find(group => group.documentIds.includes(entry.documentId))?.id || null;
         saved.activeGroupId = saved.groups.find(group => group.documentIds.includes(saved.activeDocumentId))?.id || null;
         saved.version = 2;

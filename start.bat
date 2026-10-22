@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 if not exist "config.json" copy /y "config.example.json" "config.json" >nul
 if exist "runtime\python.exe" (
-  "runtime\python.exe" launch.py
+  "runtime\python.exe" launch.py %*
   if errorlevel 1 pause
   exit /b
 )
@@ -28,5 +28,5 @@ if errorlevel 1 (
     exit /b 1
   )
 )
-".venv\Scripts\python.exe" launch.py
+".venv\Scripts\python.exe" launch.py %*
 if errorlevel 1 pause

@@ -39,6 +39,16 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 
 完整便携包包含 `runtime/`，解压后直接运行 `start.bat`，无需自行安装 Python。**GitHub 的 Download ZIP 是源码包，不包含运行时**。维护者可按下文命令生成便携包。
 
+### 同一局域网共享你的 API 额度
+
+关闭原来的启动窗口，双击 `share.bat`（或运行 `python launch.py --share`）。启动窗口会列出 `Same-network link: http://你的局域网IP:8765`，其他人连接同一 Wi-Fi/局域网后打开该链接即可使用网页，无需安装程序或填写 API Key。Windows 如提示防火墙访问，允许该程序在你信任的网络通信。
+
+所有出题请求由你的电脑调用本机 `config.json` 中的模型和密钥，API 费用记在你的账户。密钥不会发给浏览器，也不会提交到 GitHub。共享模式没有登录门槛，能访问此服务的同网用户均可调用出题。你的电脑和启动窗口需要保持运行。
+
+这是局域网共享入口，跨网络或公网访问仍需另行配置。本机 `start.bat` 继续只监听回环地址；`share.bat` 显式启用 IPv4 共享。若本地模式已占用端口，共享入口会提示关闭旧窗口，避免误把旧服务当成共享服务。
+
+各浏览器仍分别保存 PDF、测验与答案，不会自动互相共享记录。通过局域网 IP 与通过 `127.0.0.1` 访问属于不同站点存储。`platform.js` 为局域网普通 HTTP 页面补充文件去重哈希和文档 ID 支持。
+
 ### 手动运行 / macOS / Linux
 
 在项目根目录依次执行，Windows 使用 `python`，macOS/Linux 通常使用 `python3`：
@@ -120,7 +130,8 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 ├── server.py              # 本地 HTTP API、PDF 提取、模型请求和题目校验
 ├── pdf_math.py            # 根据 PDF 字形位置补充上下标阅读提示
 ├── launch.py              # 启动本地服务、检查端口、打开浏览器
-├── start.bat              # Windows 运行入口，支持便携运行时或虚拟环境
+├── start.bat              # 本机运行入口，支持便携运行时或虚拟环境
+├── share.bat              # 同一局域网共享入口，使用主机的 API 账户
 ├── configure.bat          # 在记事本编辑本机配置
 ├── check_connection.py    # API 连接检查，不发送讲义
 ├── config.example.json    # 可公开分享的空白配置模板
@@ -129,6 +140,7 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 │   ├── index.html         # 页面结构
 │   ├── app.js             # 多 PDF / 多测验状态、生成、作答、评分、导出
 │   ├── library.js         # 浏览器本机记录的 IndexedDB 读写
+│   ├── platform.js        # 局域网 HTTP 的 PDF 哈希及随机 ID 兼容
 │   ├── format.js          # 数学格式预处理和安全渲染
 │   ├── style.css          # 桌面及手机样式
 │   └── vendor/katex/      # 内置公式引擎、字体及许可证
@@ -147,7 +159,7 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 python -m unittest discover -s tests -v
 ```
 
-目前 17 项单元测试通过，覆盖引用、题型配额、模型返回格式、API 异常、上下标提取等。桌面/手机浏览器检查还覆盖同次多 PDF 联合出题与文件归属、分多次补选与新资料组分栏、旧记录迁移、重复生成、独立进度/评分、刷新恢复、来源缓存失效恢复、生成失败后保留历史记录，以及公式排版。浏览器检查使用模拟接口，不消耗模型额度；本次同步未验证真实 API 的生成质量。
+目前 20 项单元测试通过，覆盖引用、题型配额、模型返回格式、API 异常、上下标提取等。桌面/手机浏览器检查还覆盖同次多 PDF 联合出题与文件归属、分多次补选与新资料组分栏、旧记录迁移、重复生成、独立进度/评分、刷新恢复、来源缓存失效恢复、生成失败后保留历史记录，以及公式排版。浏览器检查使用模拟接口，不消耗模型额度；本次同步未验证真实 API 的生成质量。
 
 如本机装有 Node.js，可额外检查脚本语法：
 

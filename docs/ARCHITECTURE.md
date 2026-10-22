@@ -18,6 +18,7 @@
 | `server.py` | `read_config` / `provider_request`：配置和云端通信；`extract_pdf`：文档解析；`question_counts` / `validate_mixed`：题目规则；`Handler`：HTTP 路由 |
 | `pdf_math.py` | 根据较小字号与上下位移识别脚标，提示和引用分开保存，不推断普通 `x2` |
 | `static/app.js` | 资料组分栏与分次补选、每组 PDF 的多套联合测验、独立作答状态、生成请求、提交评分和导出 |
+| `static/platform.js` | 兼容普通 LAN HTTP 没有 SubtleCrypto/randomUUID 的环境；文件 SHA-256 用于去重，UUID 使用 getRandomValues |
 | `static/library.js` | 当前浏览器 IndexedDB 的单工作区读写，保存队列由 `app.js` 管理 |
 | `static/format.js` | `textContent` 输入、显式数学记号预处理、KaTeX autorender，禁止信任模型 HTML |
 | `tests/` | API 请求和错误处理、题目与引用规则、混合题限制、PDF 脚标复现 |
@@ -50,7 +51,7 @@
 
 ## 边界与限制
 
-- 服务只绑定回环地址并检查 Host/Origin；不提供公网部署、用户账户或服务端数据库。浏览器本地 IndexedDB 存储测验库，不与 GitHub 或云端同步。
+- 默认服务只绑定回环地址；`launch.py --share` 显式绑定 IPv4 的 `0.0.0.0:8765`，允许发现的私有 IPv4/本机名称及回环 Host，并拒绝 Origin 与请求 Host 不一致的 POST。`/api/health` 包含共享模式和分享链接。共享服务沿用主机配置调用模型，不向客户端返回密钥；无登录门槛，能连入的局域网用户均可使用主机额度。不提供公网部署、用户账户或服务端数据库。浏览器本地 IndexedDB 存储测验库，不与 GitHub 或云端同步。
 - 上传文件每份最大 15 MB、200 页；服务端最多缓存 10 份文档，之后淘汰最早一份。浏览器 PDF 分栏不受这个缓存数量限制，需要时自动恢复来源。每页原文和公式提示各截取最多 16,000 字符。
 - 清除浏览器站点数据会删除本机 PDF 和测验记录；更换端口、主机名、浏览器或设备也会使用不同的存储。保存失败时提示导出备份，仍可在当前页面练习。
 - 密钥在服务端使用；云端重定向不会携带凭证继续访问，错误提示不返回原始服务商错误内容。
