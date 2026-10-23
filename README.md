@@ -1,7 +1,7 @@
 # Lecture Lab · AILT9019 Group 61
 
 <!-- PUBLIC_ENTRY_START -->
-## [▶ 打开出题网页](https://west-stating-nurses-activities.trycloudflare.com)
+## [▶ 打开出题网页](https://jane-wichita-assembly-elder.trycloudflare.com)
 
 访客点击上方链接即可上传 PDF、生成练习。无需下载项目、安装 Python 或填写 API Key。
 
@@ -13,6 +13,10 @@
 Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSeek / OpenAI-compatible API. 界面运行在自己的电脑，出题调用云端模型，无需部署网站或安装 Ollama。
 
 访客使用仓库顶部的网页入口即可。下面的安装和 API 配置步骤只面向自行运行源码或维护主机的人。
+
+当前入口是主机电脑通过临时 HTTPS 隧道提供的服务，不是永久托管网站。访客直接打开链接，不需要 GitHub 账号；仓库私有权限仅影响阅读或下载源码。只要请求到达这台主机，生成就使用主机配置的 API，访客不配置密钥。主机关机、睡眠、断网或服务/隧道停止时无法使用；隧道重启后网址会改变。即使能打开页面，API 余额不足、服务商故障、任务拥堵或 PDF 无可读取内容等情况仍可能导致生成失败。不能保证世界所有地区和网络都能访问。
+
+2026-10-23 验证：两个全新、无登录和无密钥配置的浏览器会话，经当前公开 HTTPS 入口上传合成 PDF，实际调用主机 DeepSeek 分别生成选择/判断/简答各 1 道及判断 1 道，完成作答并验证刷新恢复。测试在主机上使用公开域名发起，覆盖桌面和手机尺寸，不等同于不同国家或真实手机的实机测试；独立网页读取工具未能访问该临时域名。详见 [验证记录](VALIDATION.md)及[本次测试结果](docs/PUBLIC_ACCESS_CHECK.json)。
 
 ## 快速导航
 

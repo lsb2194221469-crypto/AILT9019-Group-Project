@@ -1,0 +1,71 @@
+{
+  "url": "https://jane-wichita-assembly-elder.trycloudflare.com",
+  "verifiedAt": "2026-10-23T12:26:53.396Z",
+  "realProvider": true,
+  "visitorConfiguration": false,
+  "contexts": [
+    {
+      "label": "desktop",
+      "passed": true,
+      "model": "deepseek-flash",
+      "counts": {
+        "mcq": 1,
+        "tf": 1,
+        "short": 1
+      },
+      "questions": 3,
+      "elapsedSeconds": 25,
+      "checks": [
+        "fresh anonymous browser",
+        "public HTTPS",
+        "PDF upload",
+        "real owner API job",
+        "requested mixed counts",
+        "source filename",
+        "answer submission",
+        "reload persistence",
+        "private files inaccessible",
+        "no client API key",
+        "no browser errors"
+      ]
+    },
+    {
+      "label": "mobile",
+      "passed": true,
+      "model": "deepseek-flash",
+      "counts": {
+        "mcq": 0,
+        "tf": 1,
+        "short": 0
+      },
+      "questions": 1,
+      "elapsedSeconds": 34,
+      "checks": [
+        "fresh anonymous browser",
+        "public HTTPS",
+        "PDF upload",
+        "real owner API job",
+        "requested mixed counts",
+        "source filename",
+        "answer submission",
+        "reload persistence",
+        "private files inaccessible",
+        "no client API key",
+        "no browser errors"
+      ]
+    }
+  ],
+  "passed": true,
+  "verificationLimits": [
+    "Requests originated on the owner machine using the public HTTPS hostname.",
+    "Mobile is a viewport simulation, not a separate physical device.",
+    "Other countries and networks are unverified.",
+    "An independent remote webpage reader could not retrieve this hostname; no diagnostic cause was provided."
+  ],
+  "availabilityPrerequisites": [
+    "Host awake, connected and running public_host.py/cloudflared.",
+    "Current temporary hostname remains valid.",
+    "Configured provider has balance and is available.",
+    "Readable supported PDF, supported facts and available task capacity."
+  ]
+}
