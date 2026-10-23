@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PYTHON_VERSION = '3.13.16'
 PYTHON_SHA256 = '97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297'
 SOURCE_FILES = [
-    'server.py', 'generation_jobs.py', 'pdf_math.py', 'launch.py', 'public_host.py', 'start.bat', 'share.bat',
+    'server.py', 'generation_jobs.py', 'pdf_math.py', 'launch.py', 'public_host.py', 'github_entry.py', 'maintain_public.py', 'start.bat', 'share.bat',
     'public.bat', 'stop_public.bat', 'configure.bat',
     'check_connection.py', 'check_connection.bat', 'config.example.json',
     'requirements.txt', 'sample.json', 'sample-notes.txt', 'README.md',

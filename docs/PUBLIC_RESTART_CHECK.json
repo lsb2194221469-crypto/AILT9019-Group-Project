@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-10-23T12:57:56.874871+00:00",
+  "passed": true,
+  "previous_url": "https://jane-wichita-assembly-elder.trycloudflare.com",
+  "recovered_url": "https://house-twin-trying-scoop.trycloudflare.com",
+  "automatic_update_commit": "c9d441b512f07367fbb0824f13f2f589df1ed86f",
+  "checks": [
+    "current-user Startup shortcut installed with absolute executable and script paths",
+    "supervisor stays running without a console",
+    "verified owner host and tunnel stopped with no active jobs",
+    "supervisor restarted public host without agent action",
+    "new hostname automatically committed to GitHub",
+    "same hostname publishes no duplicate commits"
+  ],
+  "limits": [
+    "This simulates public service/tunnel termination, not a full Windows reboot.",
+    "Startup runs after Windows sign-in, not before login.",
+    "Host power, connectivity, Git Credential Manager login and repository write permission are required.",
+    "Old bookmarked temporary URLs do not redirect; use repository homepage for the latest URL."
+  ]
+}

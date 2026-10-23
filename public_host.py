@@ -104,6 +104,8 @@ def refresh_entry(url):
 
 
 def stop():
+    # An explicit stop also pauses the login supervisor, rather than immediately restarting.
+    (ROOT / '.public-autostart-disabled').touch()
     try:
         state = json.loads(STATE.read_text(encoding='utf-8'))
         local_request('/api/owner/shutdown', data=b'', headers={'X-Lecture-Owner': state['stop_token']})
@@ -121,6 +123,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.stop:
         return stop()
+    (ROOT / '.public-autostart-disabled').unlink(missing_ok=True)
     try:
         read_config()  # Validate in the owner process; never print or persist the key elsewhere.
         binary = ensure_tunnel()
@@ -143,6 +146,9 @@ def main(argv=None):
     app.stop_requested = threading.Event()
     worker = threading.Thread(target=app.serve_forever, daemon=True)
     worker.start()
+    if (ROOT / '.public-publish.json').exists():
+        subprocess.Popen([sys.executable, str(ROOT / 'maintain_public.py')], cwd=ROOT,
+                         creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     process = None
     try:
         process = subprocess.Popen([str(binary), 'tunnel', '--no-autoupdate', '--protocol', 'http2', '--url', LOCAL],

@@ -1,0 +1,89 @@
+{
+  "url": "https://house-twin-trying-scoop.trycloudflare.com",
+  "checked_at": "2026-10-23T12:55:35.876395+00:00",
+  "measurements": [
+    {
+      "path": "/",
+      "measurement_id": "2cukxfO6Yzm9MIZqK00021Myj",
+      "evidence_url": "https://api.globalping.io/v1/measurements/2cukxfO6Yzm9MIZqK00021Myj",
+      "status": "finished",
+      "results": [
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "Prinode",
+          "asn": 43969,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 2069,
+          "expected_content": true,
+          "error": null
+        },
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "AkileCloud Network",
+          "asn": 61112,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 2020,
+          "expected_content": true,
+          "error": null
+        },
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "LeaseWeb",
+          "asn": 133752,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 1995,
+          "expected_content": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "path": "/api/health",
+      "measurement_id": "2961Pmqjng84agm5900021Myj",
+      "evidence_url": "https://api.globalping.io/v1/measurements/2961Pmqjng84agm5900021Myj",
+      "status": "finished",
+      "results": [
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "Prinode",
+          "asn": 43969,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 1494,
+          "expected_content": true,
+          "error": null
+        },
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "LeaseWeb",
+          "asn": 133752,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 647,
+          "expected_content": true,
+          "error": null
+        },
+        {
+          "country": "HK",
+          "city": "Hong Kong",
+          "network": "AkileCloud Network",
+          "asn": 61112,
+          "status": "finished",
+          "http_status": 200,
+          "elapsed_ms": 1430,
+          "expected_content": true,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "scope": "Hong Kong public homepage and API health GET, not a remote PDF-upload/generation browser test. Earlier hostname: two of three homepage requests succeeded; one timed out. All three health requests succeeded."
+}

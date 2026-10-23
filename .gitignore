@@ -3,6 +3,12 @@ config.json
 .generation-jobs/
 .public-session.json
 .public-session.tmp
+.public-publish.json
+.public-maintainer.json
+.public-maintainer.tmp
+.public-maintainer.lock
+.public-autostart-disabled
+.public-host.log
 打开出题网页.url
 .env
 .env.*
