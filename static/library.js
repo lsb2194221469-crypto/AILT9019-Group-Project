@@ -36,10 +36,12 @@
         const latest = request.result || {};
         const deleted = new Set([...(latest.deletedQuizIds || []), ...(incoming.deletedQuizIds || [])]);
         const merged = {...latest, ...incoming, deletedQuizIds: [...deleted]};
-        for (const key of ['documents', 'groups', 'quizzes']) {
+        for (const key of ['documents', 'groups', 'quizzes', 'tasks']) {
           const records = new Map((latest[key] || []).map(record => [record.id, record]));
           const known = new Map((previous?.[key] || []).map(record => [record.id, record]));
           for (const record of incoming[key] || []) {
+            if (key === 'quizzes' && !known.has(record.id) && records.has(record.id)) continue;
+            if (key === 'tasks' && records.has(record.id) && records.get(record.id).status !== 'pending' && record.status === 'pending') continue;
             if (JSON.stringify(record) !== JSON.stringify(known.get(record.id))) {
               records.set(record.id, key === 'groups' ? {...record,
                 lastQuizNumber: Math.max(record.lastQuizNumber || 0, records.get(record.id)?.lastQuizNumber || 0)} : record);
@@ -56,5 +58,14 @@
       transaction.onabort = () => reject(transaction.error);
     });
   }
-  window.LectureLibrary = Object.freeze({read, write});
+  async function findQuiz(id) {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('workspace', 'readonly'), request = transaction.objectStore('workspace').get('current');
+      transaction.oncomplete = () => resolve({entry: request.result?.quizzes?.find(entry => entry.id === id), deleted: request.result?.deletedQuizIds?.includes(id)});
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+    });
+  }
+  window.LectureLibrary = Object.freeze({read, write, findQuiz});
 })();

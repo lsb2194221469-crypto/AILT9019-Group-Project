@@ -1,5 +1,6 @@
 # Local credentials
 config.json
+.generation-jobs/
 .public-session.json
 .public-session.tmp
 打开出题网页.url

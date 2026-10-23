@@ -9,12 +9,14 @@ import urllib.error
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from generation_jobs import GenerationJobs
 
 ROOT = Path(__file__).parent
 DOCUMENTS = {}
 LOCK = threading.Lock()
 LIMIT = 15 * 1024 * 1024
 CONFIG_PATH = ROOT / 'config.json'
+JOBS = GenerationJobs(ROOT / '.generation-jobs')
 
 
 def read_config():
@@ -276,6 +278,14 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host():
             self.reply(403, {'error': 'Invalid host'})
             return
+        if self.path.startswith('/api/jobs/'):
+            job_id = self.path.removeprefix('/api/jobs/')
+            if not GenerationJobs.valid_id(job_id):
+                self.reply(404, {'error': '任务不存在。'})
+                return
+            job = JOBS.get(job_id)
+            self.reply(200 if job else 404, job or {'error': '任务不存在或已过期，请手动重新生成。'})
+            return
         if self.path == '/api/health':
             self.reply(200, {'app': 'lecture-lab-local', 'status': 'ok',
                              'sharing': bool(getattr(self.server, 'sharing', False)),
@@ -354,8 +364,20 @@ class Handler(BaseHTTPRequestHandler):
                         DOCUMENTS.pop(next(iter(DOCUMENTS)))
                     DOCUMENTS[token] = pages
                 self.reply(200, {'id': token, 'pages': pages})
-            elif self.path == '/api/generate':
+            elif self.path in ('/api/generate', '/api/jobs'):
                 body = json.loads(data)
+                if not isinstance(body, dict):
+                    raise ValueError('出题请求格式无效。')
+                background = self.path == '/api/jobs'
+                if background:
+                    job_id = body.get('job_id')
+                    if not GenerationJobs.valid_id(job_id):
+                        raise ValueError('任务编号无效。')
+                    fingerprint = GenerationJobs.fingerprint(body)
+                    existing = JOBS.get(job_id, fingerprint)
+                    if existing:
+                        self.reply(200, existing)
+                        return
                 ids = body.get('document_ids', [body.get('document_id')])
                 if (not isinstance(ids, list) or not 1 <= len(ids) <= 10 or
                         any(not isinstance(key, str) or not key for key in ids) or len(set(ids)) != len(ids)):
@@ -383,7 +405,12 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError('请先在 config.json 填写配置，再点击“重新读取配置”。')
                 if not isinstance(topic, str) or len(topic) > 200:
                     raise ValueError('Topic must be 200 characters or fewer.')
-                self.reply(200, generate(pages, model, kind, count, topic, counts=counts))
+                if background:
+                    job = JOBS.submit(job_id, fingerprint,
+                                      lambda: generate(pages, model, kind, count, topic, counts=counts))
+                    self.reply(202, job)
+                else:
+                    self.reply(200, generate(pages, model, kind, count, topic, counts=counts))
             else:
                 self.reply(404, {'error': 'Not found'})
         except ValueError as error:

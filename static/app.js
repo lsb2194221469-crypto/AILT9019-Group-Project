@@ -1,9 +1,10 @@
 const $ = id => document.getElementById(id);
 const kinds = ['mcq', 'tf', 'short'];
-const workspace = {version: 2, documents: [], groups: [], quizzes: [], deletedQuizIds: [], activeGroupId: null, activeDocumentId: null, activeQuizId: null, view: 'create'};
+const workspace = {version: 2, documents: [], groups: [], quizzes: [], tasks: [], deletedQuizIds: [], activeGroupId: null, activeDocumentId: null, activeQuizId: null, view: 'create'};
 let documentData = null, quiz = null, activeEntry = null, busy = false, booting = true;
 let saveQueue = Promise.resolve(), storageNotice = false, saving = false, pendingSnapshot = null;
 let deleteTargetId = null;
+let currentTask = null, wakeTask = null;
 
 function node(tag, text, cls) {
   const el = document.createElement(tag);
@@ -25,7 +26,7 @@ function message(text, error = false) {
 }
 async function api(path, options) {
   const res = await fetch(path, options), data = await res.json();
-  if (!res.ok) { const error = new Error(data.error || '请求失败，请重试。'); error.code = data.code; throw error; }
+  if (!res.ok) { const error = new Error(data.error || '请求失败，请重试。'); error.code = data.code; error.status = res.status; throw error; }
   return data;
 }
 function counts() { return Object.fromEntries(kinds.map(k => [k, Number($('count-' + k).value)])); }
@@ -64,7 +65,7 @@ function persist() {
 function sync() {
   const locked = busy || booting, total = Object.values(counts()).reduce((a, b) => a + b, 0);
   $('generate-btn').disabled = locked || !documentData || !$('model').value || total < 1 || total > 24;
-  for (const id of ['pdf-input', 'replace-btn', 'source-group', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
+  for (const id of ['pdf-input', 'replace-btn', 'clear-pdfs-btn', 'source-group', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
   document.querySelectorAll('.pdf-link,.quiz-entry,.quiz-delete,.document-create,#nav-create,#nav-quiz,#back-btn,#regenerate-btn,#delete-quiz-btn').forEach(el => el.disabled = locked);
   $('generate-btn').setAttribute('aria-busy', String(busy));
 }
@@ -288,12 +289,12 @@ function openQuiz(entry) {
   const group = findGroup(entry.groupId); if (group) selectGroup(group); else workspace.activeGroupId = null;
   renderQuiz(); persist(); message('');
 }
-function addQuiz(data, group, settings) {
+function addQuiz(data, group, settings, id = LecturePlatform.id()) {
   // Keep the sequence increasing after deletion and make each generation an
   // independent snapshot, including its questions and generation settings.
   const number = group ? Math.max(group.lastQuizNumber || 0, ...entriesFor(group).map(entry => Number(entry.title.match(/\d+$/)?.[0]) || 0)) + 1 : 1;
   if (group) group.lastQuizNumber = number;
-  const entry = {id: LecturePlatform.id(), groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: structuredClone(data), settings: settings ? structuredClone(settings) : null,
+  const entry = {id, groupId: group?.id || null, title: `练习 ${number}`, createdAt: new Date().toISOString(), quiz: structuredClone(data), settings: settings ? structuredClone(settings) : null,
     answers: data.questions.map(() => ''), submitted: false, wrongOnly: false, expandedSources: []};
   workspace.quizzes.push(entry); openQuiz(entry);
 }
@@ -325,29 +326,79 @@ async function deleteQuiz(id) {
   message(storageNotice ? '本页已删除测验，但浏览器保存失败，刷新后可能恢复。' : '已删除所选测验，其他测验和 PDF 已保留。', storageNotice);
 }
 
+function taskDelay(ms) {
+  return new Promise(resolve => {
+    const finish = () => { clearTimeout(timer); if (wakeTask === finish) wakeTask = null; resolve(); };
+    const timer = setTimeout(finish, ms); wakeTask = finish;
+  });
+}
+async function completeTask(task, generated) {
+  const docs = task.documentIds.map(findDocument).filter(Boolean), group = findGroup(task.groupId);
+  if (!group || !docs.length) throw new Error('生成已完成，但本浏览器的原 PDF 记录缺失。');
+  const stored = await LectureLibrary.findQuiz(task.id).catch(() => ({}));
+  if (!stored.deleted && !workspace.deletedQuizIds.includes(task.id)) {
+    const existing = workspace.quizzes.find(entry => entry.id === task.id) || stored.entry;
+    if (existing) {
+      if (!workspace.quizzes.some(entry => entry.id === existing.id)) workspace.quizzes.push(existing);
+      openQuiz(existing);
+    } else {
+      for (const question of generated.questions) {
+        const index = task.requestBody.document_ids.indexOf(question.source_id);
+        question.source_document_id = docs[index >= 0 ? index : 0]?.id;
+        delete question.source_id;
+      }
+      addQuiz(generated, group, task.settings, task.id);
+    }
+  } else if (!workspace.deletedQuizIds.includes(task.id)) workspace.deletedQuizIds.push(task.id);
+  task.status = 'completed'; task.completedAt = new Date().toISOString(); await persist();
+  message(storageNotice ? '新测验已生成，但浏览器保存不可用，请导出备份。' : '新测验已保存到这组讲义下，可以继续生成或切换已有测验。', storageNotice);
+}
+async function runTask(task) {
+  currentTask = task; busy = true; sync(); $('generate-btn').textContent = '后台正在生成…';
+  try {
+    while (task.status === 'pending') {
+      try {
+        const status = task.submitted ? await api('/api/jobs/' + task.id) : await api('/api/jobs', {
+          method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(task.requestBody)});
+        if (!task.submitted) { task.submitted = true; await persist(); }
+        if (status.status === 'succeeded') { await completeTask(task, status.result); break; }
+        if (status.status === 'failed') throw Object.assign(new Error(status.error), {status: 400});
+        message(status.status === 'queued' ? '后台任务已提交，正在排队。可以切换窗口，回来后自动显示结果。' : '后台正在生成题目。可以切换窗口或刷新页面，回来后会自动取回结果。');
+        await taskDelay(1500);
+      } catch (error) {
+        if (error.code === 'document_expired' && !task.submitted) {
+          const docs = task.documentIds.map(findDocument).filter(Boolean);
+          for (const doc of docs) await readSource(doc);
+          task.requestBody.document_ids = docs.map(doc => doc.serverId); await persist();
+          continue;
+        }
+        if ([400, 403, 404, 409].includes(error.status)) throw error;
+        // A lost response is ambiguous. Retry the same task ID, never a fresh
+        // model request; the server deduplicates submissions before generation.
+        message('连接暂时中断，正在尝试取回后台任务。恢复网络或切回此页面后会继续，不会重复提交出题。');
+        await taskDelay(4000);
+      }
+    }
+  } catch (error) {
+    task.status = 'failed'; task.error = error.message; await persist(); message(error.message, true);
+  } finally {
+    currentTask = null; busy = false;
+    $('generate-btn').replaceChildren(document.createTextNode('生成我的练习'), node('span', '→')); sync();
+  }
+}
 $('generate-btn').onclick = async () => {
   if (busy || booting || !documentData || $('generate-btn').disabled) return;
   const group = findGroup(workspace.activeGroupId), docs = groupDocs(group), settings = currentSettings(), model = $('model').value;
-  rememberSettings(); busy = true; sync(); $('generate-btn').textContent = '正在生成，请稍候…';
-  message('正在根据本组全部 PDF 生成新测验。已有测验和作答记录会保留，请保持页面打开。');
+  rememberSettings(); busy = true; sync(); $('generate-btn').textContent = '正在准备讲义…';
+  message('正在准备后台出题任务…');
   try {
     for (const doc of docs) if (!doc.serverId) await readSource(doc);
-    const request = () => api('/api/generate', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({document_ids: docs.map(doc => doc.serverId), document_names: docs.map(doc => doc.name), model, ...settings})});
-    let generated;
-    try { generated = await request(); }
-    catch (e) {
-      if (e.code !== 'document_expired') throw e;
-      for (const doc of docs) await readSource(doc);
-      generated = await request();
-    }
-    for (const question of generated.questions) {
-      question.source_document_id = docs.find(doc => doc.serverId === question.source_id)?.id || docs[0].id;
-      delete question.source_id;
-    }
-    addQuiz(generated, group, settings); await persist();
-    message(storageNotice ? '新测验已生成，但浏览器保存不可用，请导出备份。' : '新测验已保存到这组讲义下，可以继续生成或切换已有测验。', storageNotice);
-  } catch (e) { message(e.message, true); }
-  finally { busy = false; $('generate-btn').replaceChildren(document.createTextNode('生成我的练习'), node('span', '→')); sync(); }
+    const id = LecturePlatform.id();
+    const task = {id, groupId: group.id, documentIds: docs.map(doc => doc.id), settings: structuredClone(settings),
+      status: 'pending', submitted: false, createdAt: new Date().toISOString(),
+      requestBody: {job_id: id, document_ids: docs.map(doc => doc.serverId), document_names: docs.map(doc => doc.name), model, ...settings}};
+    workspace.tasks.push(task); await persist(); await runTask(task);
+  } catch (error) { busy = false; sync(); $('generate-btn').textContent = '生成我的练习 →'; message(error.message, true); }
 };
 $('sample-btn').onclick = async () => {
   if (busy || booting) return;
@@ -380,6 +431,13 @@ $('export-btn').onclick = () => {
 };
 $('pdf-input').onchange = e => uploadFiles([...e.target.files]);
 $('replace-btn').onclick = () => $('pdf-input').click();
+$('clear-pdfs-btn').onclick = () => {
+  if (busy || booting) return;
+  startNewGroup(); $('pdf-input').value = '';
+  for (const id of ['source-files', 'source-document', 'source-group', 'page-select']) $(id).replaceChildren();
+  $('source-preview').textContent = ''; $('open-pdf').removeAttribute('href');
+  message('已清空当前 PDF 选择，可以重新选择。历史测验和作答记录已保留。');
+};
 $('source-group').onchange = () => { if (!busy) createFor(findGroup($('source-group').value)); };
 $('source-document').onchange = () => { if (!busy) selectDocument(findDocument($('source-document').value)); };
 $('page-select').onchange = showPage; $('refresh-models').onclick = models; $('model').onchange = sync;
@@ -412,8 +470,12 @@ $('retry-btn').onclick = () => {
   renderQuiz(); persist(); message('已开始重新练习。其他测验的作答记录会保留。'); $('quiz-view').scrollIntoView({behavior: 'smooth'});
 };
 $('wrong-btn').onclick = () => { activeEntry.wrongOnly = !activeEntry.wrongOnly; applyFilter(); persist(); };
-window.addEventListener('beforeunload', e => { if (busy) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (busy && !currentTask) { e.preventDefault(); e.returnValue = ''; } });
 window.addEventListener('pagehide', () => { if (!booting) persist(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeTask?.(); });
+window.addEventListener('focus', () => wakeTask?.());
+window.addEventListener('online', () => wakeTask?.());
+window.addEventListener('pageshow', () => wakeTask?.());
 
 async function initialize() {
   updateCounts(); sync();
@@ -428,6 +490,7 @@ async function initialize() {
         saved.version = 2;
       }
       Object.assign(workspace, saved);
+      workspace.tasks = Array.isArray(saved.tasks) ? saved.tasks : [];
       workspace.deletedQuizIds = Array.isArray(saved.deletedQuizIds) ? saved.deletedQuizIds : [];
       workspace.documents = saved.documents.filter(doc => doc.file instanceof Blob && Array.isArray(doc.pages));
       workspace.groups = saved.groups.filter(group => group.documentIds.length && group.documentIds.every(findDocument));
@@ -439,5 +502,6 @@ async function initialize() {
     } else renderLibrary();
   } catch (_) { storageNotice = true; message('无法读取此浏览器的测验记录。本页仍可使用，请导出测验备份。', true); renderLibrary(); }
   booting = false; sync(); await models();
+  for (const task of workspace.tasks.filter(task => task.status === 'pending')) await runTask(task);
 }
 initialize();

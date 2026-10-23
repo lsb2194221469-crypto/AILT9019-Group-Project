@@ -5,7 +5,7 @@
 1. `launch.py` 在 `127.0.0.1:8765` 启动标准库 HTTP 服务，随后打开浏览器。
 2. `static/app.js` 把 PDF 字节提交到 `/api/upload`。`pypdf` 提取原文，`pdf_math.py` 使用 PyMuPDF 字形位置生成独立的公式阅读提示。
 3. 服务将各页内容保存在内存，返回随机文档 ID。浏览器按文件名与内容哈希复用重复导入的同一 PDF，复用仅用于文件存储，以资料组 ID 管理分栏；生成前多次文件选择追加到当前草稿组。取消或无新增文件不创建新组，补选时先检查累计去重数量（最多 10），超限保留现有选择。已有关联测验的组追加新文件时复制为新草稿组，避免改变历史测验来源；原 PDF 链接使用本地 Blob URL。
-4. 用户设置 `mcq/tf/short` 三个数量和可选主题，提交到 `/api/generate`。
+4. 用户设置 `mcq/tf/short` 三个数量和可选主题，以随机任务编号提交到 `/api/jobs`（快速返回任务状态），由独立后台线程生成。页面通过 `GET /api/jobs/<id>` 取回状态与结果。旧的同步 `/api/generate` 接口保留兼容性。
 5. `generate()` 选取讲义页，从本机 `config.json` 读取配置，在服务端调用兼容的 `chat/completions` 接口。原文最多 22,000 字符，公式提示另有最多 22,000 字符预算。
 6. `validate_mixed()` 校验题型配额、去重、答案结构及引用匹配，只返回通过检查的题目。
 7. 每次成功生成创建独立测验，关联到当前上传资料组。组内 PDF 联合出题，后端交错取页，并为多个 PDF 的重叠页码分配唯一内部引用 ID；通过引用校验后，再还原实际文件名和页码。浏览器通过 `format.js` 渲染公式。客观题按原始选项值计分；简答题展示参考答案供自评，原文引用保持文本。
@@ -31,7 +31,9 @@
 | `GET /api/models` | 无 | 本机配置的模型名称及状态，不返回密钥、不访问云端 |
 | `GET /api/sample` | 无 | 明确标注的预生成示例 |
 | `POST /api/upload` | PDF 原始字节，`Content-Type: application/pdf` | `{id, pages}`；页包含 `page/text/math_context` |
-| `POST /api/generate` | 下方 JSON | `{questions, requested_counts, actual_counts, notice, pages_used, sample}` |
+| `POST /api/jobs` | 下方 JSON + `job_id`（32–80 位随机编号） | HTTP 202，新任务；同编号/同请求重试返回已有任务，不重复调用模型 |
+| `GET /api/jobs/<id>` | 随机任务编号 | queued/running/succeeded/failed，成功时附 result；无任务列表 |
+| `POST /api/generate` | 下方 JSON（旧同步接口） | `{questions, requested_counts, actual_counts, notice, pages_used, sample}` |
 
 ```json
 {
@@ -73,3 +75,13 @@
 本地 `README.md` 与 `打开出题网页.md` 在新地址生成后更新；仓库发布由维护者同步。无账号 Quick Tunnel 的域名不持久，不应声称为固定托管地址。原文件上传、题目与 IndexedDB 逻辑不变；不同域名使用不同的浏览器记录。
 
 历史保存和删除回归可用 `node tests/test_history_browser.cjs` 运行。需另装 Node.js 与 Playwright/Chrome（仅开发测试需要，普通用户不需要）；可通过 `LECTURE_LAB_PYTHON`、`LECTURE_LAB_PLAYWRIGHT`、`LECTURE_LAB_CHROME` 指定路径。该检查使用独立浏览器环境、合成 PDF 和模拟服务，既不读取 `config.json` 也不调用真实模型。
+
+## 后台生成与页面恢复
+
+浏览器在提交前将任务编号、资料组、设置和原始请求保存到 IndexedDB `tasks`，断网或提交响应丢失时重用同一编号。服务端在独立线程执行，两个执行槽、最多 16 个未完成任务；提交连接结束不会取消任务。任务编号也是获取结果的随机凭证，接口不列出其他任务。接口仍受 Host/Origin 检查保护，编号不能包含路径。
+
+`generation_jobs.py` 将状态、请求摘要与成功结果原子写入私有 `.generation-jobs/`，不写入 API 配置、完整 PDF 或输入上下文；结果自身包含题目和引用。最多保留 100 条，结果 24 小时过期或容量受限时淘汰已结束记录，活动任务不会被淘汰。该目录被 Git 忽略，打包采用来源白名单也不会包含它。主机重启将未完成的旧任务标为失败，绝不自动重新调用模型。
+
+页面挂起只暂停轮询；恢复可见、焦点、联网或 pageshow 时立即检查状态。初始化恢复 pending 任务。任务编号同时作为生成测验的 ID，重复取回不会追加第二套或覆盖已有作答；已删除的测验仍受删除墓碑保护。`library.js` 也合并任务记录，已结束状态不会被旧标签页写回 pending。主机睡眠/关机不能继续运算。
+
+后台浏览器回归：`node tests/test_background_browser.cjs`，使用与历史回归相同的 Playwright/Python/Chrome 配置变量。测试冻结页面、生成中刷新、关闭页面后取回、离线恢复、丢失首次提交响应后的幂等重试；全部使用模拟模型。
