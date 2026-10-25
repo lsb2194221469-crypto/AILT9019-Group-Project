@@ -1,0 +1,71 @@
+{
+  "input": "examples/math-notes.pdf",
+  "input_sha256": "021448756ec728f57dcbbd2cea507bbe590a750042f7970fb770a5eeb95c7aad",
+  "provenance": {
+    "kind": "live_provider_response",
+    "model": "deepseek-flash",
+    "verified_at_utc": "2026-10-25T15:21:18.035963+00:00",
+    "elapsed_seconds": 11.79
+  },
+  "result": {
+    "questions": [
+      {
+        "question": "For \\(f(x)=x^{2}\\), what is \\(f'(3)\\)?",
+        "answer": "6",
+        "explanation": "The cited page gives \\(f'(x)=2x\\), so \\(f'(3)=2\\times 3=6\\).",
+        "quote": "At x = 3, the derivative f'(3) is 6.",
+        "page": 1,
+        "options": [
+          "6",
+          "9",
+          "3",
+          "2"
+        ],
+        "type": "mcq",
+        "source_id": "example-math-notes",
+        "source_name": "math-notes.pdf"
+      },
+      {
+        "question": "For a Bernoulli random variable with success probability \\(p=0.25\\), the variance is \\(0.1875\\).",
+        "answer": "True",
+        "explanation": "The page states \\(\\mathrm{Var}(X)=p(1-p)\\) and that for \\(p=0.25\\) the variance is \\(0.1875\\).",
+        "quote": "For p = 0.25, the expectation is 0.25 and the variance is 0.1875.",
+        "page": 2,
+        "options": [
+          "True",
+          "False"
+        ],
+        "type": "tf",
+        "source_id": "example-math-notes",
+        "source_name": "math-notes.pdf"
+      },
+      {
+        "question": "What are the possible values of a Bernoulli random variable \\(X\\)?",
+        "answer": "\\(0\\) and \\(1\\)",
+        "explanation": "The cited page says a Bernoulli random variable takes only the values \\(0\\) and \\(1\\).",
+        "quote": "A Bernoulli random variable X takes only the values 0 and 1.",
+        "page": 2,
+        "options": [],
+        "type": "short",
+        "source_id": "example-math-notes",
+        "source_name": "math-notes.pdf"
+      }
+    ],
+    "sample": false,
+    "requested_counts": {
+      "mcq": 1,
+      "tf": 1,
+      "short": 1
+    },
+    "actual_counts": {
+      "mcq": 1,
+      "tf": 1,
+      "short": 1
+    },
+    "notice": "选择 1/1、判断 1/1、简答 1/1 道通过检查。引用已匹配提取文字，公式与答案请对照 PDF 原页核对。",
+    "pages_used": [
+      1,
+      2
+    ]
+  }
+}

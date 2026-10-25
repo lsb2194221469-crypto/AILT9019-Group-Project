@@ -18,6 +18,17 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 
 2026-10-23 验证：两个全新、无登录和无密钥配置的浏览器会话，经当前公开 HTTPS 入口上传合成 PDF，实际调用主机 DeepSeek 分别生成选择/判断/简答各 1 道及判断 1 道，完成作答并验证刷新恢复。测试在主机上使用公开域名发起，覆盖桌面和手机尺寸，不等同于不同国家或真实手机的实机测试；独立网页读取工具未能访问该临时域名。详见 [验证记录](VALIDATION.md)及[本次测试结果](docs/PUBLIC_ACCESS_CHECK.json)。恢复后的新域名已通过三个香港节点的首页及后台健康接口检查，详情见 [香港检测](docs/HONG_KONG_CHECK.json)；[服务恢复与自动同步记录](docs/PUBLIC_RESTART_CHECK.json)说明了验证范围。
 
+<!-- REPRODUCIBLE_EXAMPLE_START -->
+## Reproduce the assessed core workflow
+
+For course staff: download the two-page [example PDF](examples/math-notes.pdf), upload it through the real generation workflow, set **MCQ = 1, true/false = 1, short-answer = 1**, and leave the topic blank. Expect three supported questions, source references to the PDF, and answers that agree with its facts. The [reproduction guide](examples/README.md) provides the exact UI steps, expected answers, refresh/history checks and the [recorded live output](examples/expected-output.json).
+
+After installing `requirements.txt`, run `python tools/reproduce_example.py` to check the saved result against the PDF **without an API key**. Expected: exit 0 and `passed: true`, with two input pages and one question of each type. This is a saved-output check, not a new generation call. To generate again with your configured API, run `python tools/reproduce_example.py --live --output .example-runs/latest.json`; this consumes provider quota. API output wording can vary, so check supported facts and citations rather than exact text.
+
+The public application link at the top uses the project host's API while that host is online. A separate local installation follows the setup and configuration sections below. [Verification evidence](docs/MIDTERM_REPRODUCTION_CHECK.json) records the 25 October checks, including 38 passing existing unit tests and one real three-question generation. The older `sample.json` is a prewritten demo and does not demonstrate PDF generation.
+<!-- REPRODUCIBLE_EXAMPLE_END -->
+
+
 ## 快速导航
 
 - [安装与运行](#安装与运行)

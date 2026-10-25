@@ -1,0 +1,84 @@
+{
+  "verified_on": "2026-10-25",
+  "timezone": "Asia/Shanghai",
+  "input": {
+    "path": "examples/math-notes.pdf",
+    "pages": 2,
+    "sha256": "021448756ec728f57dcbbd2cea507bbe590a750042f7970fb770a5eeb95c7aad",
+    "kind": "author-written synthetic PDF"
+  },
+  "existing_unit_tests": {
+    "command": "python -m unittest discover -s tests -v",
+    "run": 38,
+    "failures": 0,
+    "errors": 0,
+    "elapsed_seconds": 5.022,
+    "calls_real_api": false
+  },
+  "real_generation": {
+    "kind": "live_provider_response",
+    "model": "deepseek-flash",
+    "verified_at_utc": "2026-10-25T15:21:18.035963+00:00",
+    "elapsed_seconds": 11.79,
+    "requested_counts": {
+      "mcq": 1,
+      "tf": 1,
+      "short": 1
+    },
+    "actual_counts": {
+      "mcq": 1,
+      "tf": 1,
+      "short": 1
+    },
+    "questions": 3,
+    "sample": false,
+    "source_checks_passed": true,
+    "output": "examples/expected-output.json",
+    "production_code_used": true,
+    "owner_api_quota_consumed": true
+  },
+  "source_fact_review": [
+    {
+      "question_type": "mcq",
+      "expected_answer": "6",
+      "source_page": 1,
+      "matches_recorded_output": true
+    },
+    {
+      "question_type": "tf",
+      "expected_answer": "True (0.25 * 0.75 = 0.1875)",
+      "source_page": 2,
+      "matches_recorded_output": true
+    },
+    {
+      "question_type": "short",
+      "expected_answer": "0 and 1",
+      "source_page": 2,
+      "matches_recorded_output": true
+    }
+  ],
+  "offline_check": {
+    "command": "python tools/reproduce_example.py",
+    "status": "passed",
+    "exit_code": 0,
+    "input_pages": 2,
+    "questions": 3,
+    "actual_counts": {
+      "mcq": 1,
+      "tf": 1,
+      "short": 1
+    },
+    "api_called": false
+  },
+  "code_blobs": {
+    "server.py": "5975ee9be63060cd5ff0c6f0ff051484bb91b417",
+    "pdf_math.py": "efbd03bdb65fec4dd812d7c2d9d06d932d09cfb8",
+    "generation_jobs.py": "90bf7840e917642a237931fc9eff8774931dfad2"
+  },
+  "limits": [
+    "One small readable PDF and three generated questions; not a broad semantic quality benchmark.",
+    "The live reproduction uses production backend functions; new UI automation was not run for this update. Browser steps and prior UI evidence are documented separately.",
+    "Independent local generation requires a working provider configuration; the offline saved-output check does not.",
+    "Output wording may vary; counts, source quotes and factual correctness are the acceptance checks."
+  ]
+}

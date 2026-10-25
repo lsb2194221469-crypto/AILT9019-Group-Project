@@ -1,0 +1,11 @@
+Page 1: Squares and derivatives
+For a real number x, its square is x multiplied by x.
+For x = 3, the value of x squared is 9.
+The derivative of f(x) = x squared is f'(x) = 2x.
+At x = 3, the derivative f'(3) is 6.
+
+Page 2: Bernoulli random variables
+A Bernoulli random variable X takes only the values 0 and 1.
+If the success probability is p, then P(X = 1) = p.
+Its expectation is E[X] = p and its variance is Var(X) = p(1 - p).
+For p = 0.25, the expectation is 0.25 and the variance is 0.1875.
