@@ -1,7 +1,7 @@
 # Lecture Lab · AILT9019 Group 61
 
 <!-- PUBLIC_ENTRY_START -->
-## [▶ 打开出题网页](https://traffic-customs-paradise-exist.trycloudflare.com)
+## [▶ 打开出题网页](https://infrared-recipients-del-solid.trycloudflare.com)
 
 访客点击上方链接即可上传 PDF、生成练习。无需下载项目、安装 Python 或填写 API Key。
 
