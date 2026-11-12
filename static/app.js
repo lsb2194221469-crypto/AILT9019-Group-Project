@@ -102,7 +102,8 @@ function renderLibrary() {
   const list = $('quiz-library'); list.replaceChildren();
   $('quiz-count').textContent = workspace.quizzes.length;
   for (const sourceGroup of workspace.groups) {
-    const entries = entriesFor(sourceGroup);
+    const query = ($('library-search')?.value || '').trim().toLocaleLowerCase();
+    const entries = entriesFor(sourceGroup).filter(entry => !query || (groupName(sourceGroup) + ' ' + entry.title).toLocaleLowerCase().includes(query));
     if (!entries.length) continue;
     const group = node('section', undefined, 'pdf-group');
     group.dataset.groupId = sourceGroup.id;
@@ -131,7 +132,7 @@ function renderLibrary() {
     group.append(children); list.append(group);
   }
   const sample = workspace.quizzes.find(entry => entry.quiz.sample);
-  if (sample) {
+  if (sample && (!($('library-search')?.value || '').trim() || ('示例 机器学习基础 ' + sample.title).includes($('library-search').value.trim()))) {
     const link = node('button', '示例：机器学习基础', 'quiz-entry sample-entry');
     if (workspace.view === 'quiz' && workspace.activeQuizId === sample.id) link.setAttribute('aria-current', 'page');
     link.onclick = () => { if (!busy && !booting) openQuiz(sample); };
@@ -140,6 +141,7 @@ function renderLibrary() {
     remove.setAttribute('aria-label', '删除示例测验'); remove.append(trashIcon());
     remove.onclick = () => requestDeleteQuiz(sample); row.append(link, remove); list.append(row);
   }
+  if ($('search-empty')) $('search-empty').hidden = !($('library-search').value.trim() && !list.children.length);
   sync();
 }
 function showPage() {

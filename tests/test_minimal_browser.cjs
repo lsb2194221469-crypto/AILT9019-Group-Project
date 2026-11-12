@@ -1,0 +1,35 @@
+// Reuse the full history regression, adding UI assertions for the new controls.
+const fs = require('fs'), path = require('path'), Module = require('module');
+let source = fs.readFileSync(path.join(__dirname, 'test_history_browser.cjs'), 'utf8');
+source = source.replace('await ready(page);', `await ready(page);
+  await page.screenshot({path:path.join(artifacts,'landing-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:path.join(artifacts,'landing-mobile.png'),fullPage:true});
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.setViewportSize({width:1440,height:1000});`);
+source = source.replace('assert.deepEqual(errors,[]);', `
+  await page.click('#rename-btn'); await page.fill('#quiz-name','期末复习 · 微积分');
+  await page.click('#rename-form button[type=submit]');
+  await page.waitForFunction(()=>!document.getElementById('rename-dialog').open);
+  await reload(page); assert.equal(await page.evaluate(()=>activeEntry.title),'期末复习 · 微积分');
+  await page.fill('#library-search','不存在的文件'); assert(await page.isVisible('#search-empty'));
+  assert.equal(await page.locator('#quiz-library .quiz-row').count(),0);
+  await page.fill('#library-search','微积分'); assert.equal(await page.locator('#quiz-library .quiz-row').count(),1);
+  await page.fill('#library-search','');
+  const downloadWait = page.waitForEvent('download'); await page.click('#markdown-btn');
+  const download = await downloadWait; const exported = fs.readFileSync(await download.path(),'utf8');
+  assert(exported.includes('期末复习 · 微积分')); assert(exported.includes('**答案：**')); assert(exported.includes('**出处：**'));
+  await page.emulateMedia({media:'print'});
+  assert.equal(await page.locator('.sidebar').evaluate(el=>getComputedStyle(el).display),'none');
+  await page.emulateMedia({media:'screen'});
+  await page.click('#regenerate-btn'); await page.getByRole('button',{name:'快速复习',exact:true}).click();
+  assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:1});
+  await page.getByRole('button',{name:'深入理解',exact:true}).click();
+  assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:6});
+  await saved(page); await reload(page); assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:6});
+  await page.setViewportSize({width:390,height:844});
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  assert.deepEqual(errors,[]);
+  console.log('PASS: minimal desktop/mobile, no overflow, rename persistence, search, Markdown contents, print CSS and preset persistence.');`);
+const test = new Module(__filename, module); test.filename = __filename; test.paths = module.paths;
+test._compile(source, __filename);

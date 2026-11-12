@@ -368,6 +368,8 @@ class Handler(BaseHTTPRequestHandler):
             mime = {'.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2'}
             if asset.is_relative_to(vendor_root) and asset.is_file() and asset.suffix in mime:
                 files[self.path] = (str(asset.relative_to(ROOT / 'static')), mime[asset.suffix])
+        files['/minimal.css'] = ('minimal.css', 'text/css')
+        files['/enhancements.js'] = ('enhancements.js', 'text/javascript')
         if self.path not in files:
             self.reply(404, {'error': 'Not found'})
             return

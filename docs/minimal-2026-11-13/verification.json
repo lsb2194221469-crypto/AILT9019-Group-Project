@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    "independent generations",
+    "stale-tab append preservation",
+    "unchanged stale answer preservation",
+    "explicit edit preservation",
+    "cancel/Escape/focus",
+    "per-row deletion",
+    "active fallback",
+    "deleted quiz cannot resurrect",
+    "reload",
+    "monotonic numbering",
+    "retained PDF reuse",
+    "sample recreation",
+    "desktop/mobile"
+  ],
+  "realProvider": false,
+  "date": "2026-11-13",
+  "minimal_checks": [
+    "desktop/mobile screenshots reviewed",
+    "no horizontal overflow",
+    "rename persists after refresh",
+    "history search and empty state",
+    "Markdown download includes answers and source",
+    "print CSS",
+    "preset counts and persistence"
+  ],
+  "python_tests": 40,
+  "client_error_checks": "passed",
+  "rollback_archive": "SHA-256, safe extraction and byte comparison passed"
+}
