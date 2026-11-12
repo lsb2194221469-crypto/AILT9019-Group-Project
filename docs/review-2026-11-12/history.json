@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "independent generations",
+    "stale-tab append preservation",
+    "unchanged stale answer preservation",
+    "explicit edit preservation",
+    "cancel/Escape/focus",
+    "per-row deletion",
+    "active fallback",
+    "deleted quiz cannot resurrect",
+    "reload",
+    "monotonic numbering",
+    "retained PDF reuse",
+    "sample recreation",
+    "desktop/mobile"
+  ],
+  "realProvider": false
+}

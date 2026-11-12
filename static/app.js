@@ -25,9 +25,22 @@ function message(text, error = false) {
   $('message').className = error ? 'error' : '';
 }
 async function api(path, options) {
-  const res = await fetch(path, options), data = await res.json();
-  if (!res.ok) { const error = new Error(data.error || '请求失败，请重试。'); error.code = data.code; error.status = res.status; throw error; }
-  return data;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), path === '/api/generate' ? 330000 : 60000);
+  try {
+    const res = await fetch(path, {...options, signal: controller.signal});
+    let data;
+    try { data = await res.json(); }
+    catch (_) {
+      throw Object.assign(new Error('服务返回了无法读取的响应，请检查连接后重试。'), {status: res.status});
+    }
+    if (!res.ok) { const error = new Error(data?.error || '请求失败，请重试。'); error.code = data?.code; error.status = res.status; throw error; }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('服务返回的数据格式无效，请稍后重试。');
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('连接超时，请检查网络。已提交的后台任务会继续运行。');
+    throw error;
+  } finally { clearTimeout(timer); }
 }
 function counts() { return Object.fromEntries(kinds.map(k => [k, Number($('count-' + k).value)])); }
 function mathNode(tag, text, cls) { return LectureMath.text(node(tag, undefined, cls), text); }
@@ -361,7 +374,13 @@ async function runTask(task) {
         const status = task.submitted ? await api('/api/jobs/' + task.id) : await api('/api/jobs', {
           method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(task.requestBody)});
         if (!task.submitted) { task.submitted = true; await persist(); }
-        if (status.status === 'succeeded') { await completeTask(task, status.result); break; }
+        if (status.status === 'succeeded') {
+          // A local import/render failure is not a network interruption. Stop
+          // polling and show the actual error instead of looping forever.
+          try { await completeTask(task, status.result); }
+          catch (error) { error.status = 400; throw error; }
+          break;
+        }
         if (status.status === 'failed') throw Object.assign(new Error(status.error), {status: 400});
         message(status.status === 'queued' ? '后台任务已提交，正在排队。可以切换窗口，回来后自动显示结果。' : '后台正在生成题目。可以切换窗口或刷新页面，回来后会自动取回结果。');
         await taskDelay(1500);

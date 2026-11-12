@@ -138,7 +138,7 @@ def validate_questions(items, pages, kind, count):
         options = item.get('options', [])
         if kind == 'mcq':
             if (not isinstance(options, list) or len(options) != 4
-                    or any(not isinstance(o, str) or not o.strip() for o in options)
+                    or any(not isinstance(o, str) or not o.strip() or len(o) > 3000 for o in options)
                     or len(set(normalized(o) for o in options)) != 4
                     or item['answer'] not in options):
                 continue
@@ -174,7 +174,7 @@ def validate_mixed(items, pages, counts):
         if not isinstance(item, dict):
             continue
         kind = item.get('type')
-        if kind not in counts or actual[kind] >= counts[kind]:
+        if not isinstance(kind, str) or kind not in counts or actual[kind] >= counts[kind]:
             continue
         valid = validate_questions([item], pages, kind, 1)
         if not valid or normalized(valid[0]['question']) in seen:

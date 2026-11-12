@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "modelCalls": 5,
+  "realProvider": false,
+  "checks": [
+    "frozen page",
+    "refresh while running",
+    "closed tab",
+    "offline recovery",
+    "ambiguous submission retry",
+    "one import per job",
+    "answer persistence"
+  ]
+}

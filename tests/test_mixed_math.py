@@ -31,6 +31,20 @@ class MixedMathTests(unittest.TestCase):
             with self.assertRaises(ValueError): server.question_counts(bad)
         self.assertEqual(sum(server.question_counts({'mcq':0,'tf':12,'short':12}).values()),24)
 
+    def test_malformed_model_type_does_not_discard_valid_questions(self):
+        counts = {'mcq': 1, 'tf': 0, 'short': 0}
+        malformed = [dict(self.base, type=value) for value in ([], {}, None, 1, True)]
+        valid, actual = server.validate_mixed(malformed + [self.base], self.pages, counts)
+        self.assertEqual(actual, counts)
+        self.assertEqual(len(valid), 1)
+
+    def test_oversized_model_option_is_rejected_without_losing_valid_question(self):
+        oversized = dict(self.base, options=[self.base['answer'], 'x' * 3001, 'B', 'C'])
+        counts = {'mcq': 1, 'tf': 0, 'short': 0}
+        valid, actual = server.validate_mixed([oversized, self.base], self.pages, counts)
+        self.assertEqual(actual, counts)
+        self.assertEqual(valid[0]['options'], self.base['options'])
+
     def test_generation_preserves_math_hints_and_reports_shortfall(self):
         with patch.object(server, 'read_config', return_value={'model':'test'}), patch.object(server, 'provider_request', return_value={'choices':[{'message':{'content':json.dumps({'questions':[self.base]})}}]}) as provider:
             result = server.generate(self.pages,'test','mcq',4,'',counts={'mcq':1,'tf':1,'short':1})
