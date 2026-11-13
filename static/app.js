@@ -141,6 +141,11 @@ function renderLibrary() {
     remove.setAttribute('aria-label', '删除示例测验'); remove.append(trashIcon());
     remove.onclick = () => requestDeleteQuiz(sample); row.append(link, remove); list.append(row);
   }
+  if (!workspace.quizzes.length && !($('library-search')?.value || '').trim()) {
+    const empty = node('div', undefined, 'collection-empty');
+    empty.append(node('strong', '你的第一套测验，会出现在这里。'), node('p', '上传讲义开始练习。每次生成都会独立保存，方便随时回来复习。'));
+    list.append(empty);
+  }
   if ($('search-empty')) $('search-empty').hidden = !($('library-search').value.trim() && !list.children.length);
   sync();
 }

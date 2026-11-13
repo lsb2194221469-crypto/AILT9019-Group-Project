@@ -1,5 +1,10 @@
 /* Additive controls; keep the existing IndexedDB schema and quiz IDs intact. */
 (() => {
+  $('nav-library').onclick = () => $('library-section').scrollIntoView({behavior:'smooth',block:'start'});
+  const dock = () => { $('generation-dock').hidden = workspace.view === 'quiz'; $('dock-summary').textContent = documentData ? `${groupDocs(findGroup(workspace.activeGroupId)).length} 份讲义 · ${Object.values(counts()).reduce((a,b)=>a+b,0)} 道题，准备好了。` : '选好讲义，再开始。'; };
+  new MutationObserver(dock).observe($('create-view'), {attributes:true,attributeFilter:['hidden']});
+  new MutationObserver(dock).observe($('generate-btn'), {attributes:true,attributeFilter:['disabled']});
+  dock();
   $('library-search').addEventListener('input', renderLibrary);
   const presets = node('div', undefined, 'preset-row');
   presets.setAttribute('aria-label', '题量快捷设置');
