@@ -8,6 +8,30 @@ from unittest.mock import patch, MagicMock
 import server
 
 class ApiTests(unittest.TestCase):
+    def test_refused_local_proxy_uses_direct_connection_before_api_request(self):
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://127.0.0.1:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection', side_effect=ConnectionRefusedError), patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            handlers = build.call_args.args
+            self.assertEqual(handlers[0].proxies, {})
+            self.assertIsInstance(handlers[1], server.NoRedirect)
+
+    def test_working_local_proxy_is_preserved(self):
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://localhost:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection') as connect, patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            self.assertEqual(len(build.call_args.args), 1)
+            connect.assert_called_once()
+
+    def test_unresponsive_local_proxy_uses_direct_before_sending_request(self):
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://127.0.0.1:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection', side_effect=TimeoutError), patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            self.assertEqual(build.call_args.args[0].proxies, {})
+
+    def test_remote_proxy_is_never_probed_or_bypassed(self):
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://proxy.example:8080'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection') as connect, patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            self.assertEqual(len(build.call_args.args), 1)
+            connect.assert_not_called()
+
     def test_configuration_rejects_missing_key_and_insecure_endpoint(self):
         with tempfile.TemporaryDirectory(dir=server.ROOT / 'tests') as directory:
             path = Path(directory) / 'config.json'

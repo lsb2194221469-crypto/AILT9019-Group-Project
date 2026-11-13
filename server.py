@@ -3,6 +3,8 @@ import io
 import json
 import re
 import secrets
+import socket
+import ipaddress
 import threading
 import urllib.request
 import urllib.error
@@ -52,13 +54,42 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def model_opener(base_url):
+    """Ignore an unavailable loopback proxy; retain working or remote proxies.
+
+    Probe before sending any API request, so a generation is never replayed
+    after an ambiguous provider response. No system proxy settings are changed.
+    """
+    proxy = urllib.request.getproxies().get(urllib.parse.urlsplit(base_url).scheme)
+    if proxy and not urllib.request.proxy_bypass(urllib.parse.urlsplit(base_url).hostname):
+        try:
+            parsed = urllib.parse.urlsplit(proxy if '://' in proxy else 'http://' + proxy)
+            host = parsed.hostname
+            local = host == 'localhost'
+            if not local and host:
+                try:
+                    local = ipaddress.ip_address(host).is_loopback
+                except ValueError:
+                    pass
+            if local:
+                try:
+                    with socket.create_connection((host, parsed.port or (443 if parsed.scheme == 'https' else 80)), timeout=2):
+                        pass
+                except (ConnectionRefusedError, TimeoutError):
+                    return urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        except (OSError, ValueError):
+            # Other socket errors or malformed settings retain default behavior.
+            pass
+    return urllib.request.build_opener(NoRedirect())
+
+
 def provider_request(path, payload=None, config=None):
     config = config or read_config()
     data = json.dumps(payload).encode() if payload is not None else None
     request = urllib.request.Request(config['base_url'] + '/' + path, data=data,
                                      headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config['api_key']})
     # Never forward bearer credentials across an HTTP redirect.
-    opener = urllib.request.build_opener(NoRedirect())
+    opener = model_opener(config['base_url'])
     try:
         with opener.open(request, timeout=150 if data else 15) as response:
             raw = response.read(2 * 1024 * 1024 + 1)
