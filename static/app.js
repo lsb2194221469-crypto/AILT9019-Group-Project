@@ -79,7 +79,7 @@ function sync() {
   const locked = busy || booting, total = Object.values(counts()).reduce((a, b) => a + b, 0);
   $('generate-btn').disabled = locked || !documentData || !$('model').value || total < 1 || total > 24;
   for (const id of ['pdf-input', 'replace-btn', 'clear-pdfs-btn', 'source-group', 'source-document', 'sample-btn', 'refresh-models', 'model', 'topic', ...kinds.map(k => 'count-' + k)]) $(id).disabled = locked;
-  document.querySelectorAll('.pdf-link,.quiz-entry,.quiz-delete,.document-create,#nav-create,#nav-quiz,#back-btn,#regenerate-btn,#delete-quiz-btn').forEach(el => el.disabled = locked);
+  document.querySelectorAll('.pdf-link,.quiz-entry,.quiz-delete,.document-create,#nav-create,#nav-quiz,#back-btn,#extra-set-btn,#regenerate-btn,#delete-quiz-btn').forEach(el => el.disabled = locked);
   $('generate-btn').setAttribute('aria-busy', String(busy));
 }
 async function models() {
@@ -284,7 +284,7 @@ function renderQuiz() {
     if (!doc.url) doc.url = URL.createObjectURL(doc.file);
     const link = node('a', doc.name); link.href = doc.url; link.target = '_blank'; link.rel = 'noopener'; return link;
   }));
-  $('regenerate-btn').hidden = !group; $('quiz-notice').textContent = quiz.notice;
+  $('regenerate-btn').hidden = !group; $('extra-set-btn').hidden = !group; $('quiz-notice').textContent = quiz.notice;
   quiz.questions.forEach((q, i) => {
     const card = node('article', undefined, 'card question');
     card.append(node('span', `QUESTION ${String(i + 1).padStart(2, '0')} / ${q.type === 'mcq' ? '选择题' : q.type === 'tf' ? '判断题' : '简答题'}`, 'q-number'), mathNode('h3', q.question));
@@ -480,6 +480,15 @@ $('topic').oninput = () => { rememberSettings(); persist(); };
 ['dragleave', 'drop'].forEach(event => $('dropzone').addEventListener(event, e => { e.preventDefault(); $('dropzone').classList.remove('drag'); if (event === 'drop') uploadFiles([...e.dataTransfer.files]); }));
 $('back-btn').onclick = () => { if (!busy && !booting) createFor(findGroup(workspace.activeGroupId)); };
 $('nav-create').onclick = () => { if (!busy && !booting) startNewGroup(); };
+$('extra-set-btn').onclick = async () => {
+  if (busy || booting || !activeEntry) return;
+  const group = findGroup(activeEntry.groupId);
+  if (!group) { message('请先上传 PDF，示例测验不支持直接出题。', true); return; }
+  const settings = structuredClone(activeEntry.settings || group.settings);
+  createFor(group, settings);
+  if ($('generate-btn').disabled) { message('请先检查题型数量及模型配置，再生成新测验。', true); return; }
+  await $('generate-btn').onclick();
+};
 $('regenerate-btn').onclick = () => { if (!busy && activeEntry) createFor(findGroup(activeEntry.groupId), activeEntry.settings); };
 $('delete-quiz-btn').append(trashIcon(), document.createTextNode('删除测验'));
 $('delete-quiz-btn').onclick = () => { if (activeEntry) requestDeleteQuiz(activeEntry); };
