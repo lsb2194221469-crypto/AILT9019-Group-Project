@@ -246,12 +246,38 @@ function responses() {
 function progress() {
   const done = responses().filter(value => value.trim()).length;
   $('answer-progress').textContent = `已完成 ${done} / ${quiz.questions.length} 题`;
-  $('progress').max = quiz.questions.length; $('progress').value = done;
+  $('progress').max = quiz.questions.length; $('progress').value = done; renderQuestionMap();
+}
+function renderQuestionMap() {
+  if (!quiz || !activeEntry) return;
+  const map = $('question-map'); map.replaceChildren();
+  quiz.questions.forEach((question, index) => {
+    const answered = Boolean(activeEntry.answers[index]?.trim());
+    const starred = (activeEntry.starredQuestions || []).includes(index);
+    const button = node('button', String(index + 1) + (starred ? ' ★' : ''), 'question-jump');
+    button.classList.toggle('answered', answered);
+    button.setAttribute('aria-label', `第 ${index + 1} 题，${answered ? '已答' : '未答'}${starred ? '，已收藏' : ''}`);
+    button.onclick = () => jumpToQuestion(index); map.append(button);
+  });
+  $('next-unanswered').hidden = activeEntry.submitted;
+  $('next-unanswered').disabled = activeEntry.answers.every(answer => answer.trim());
+}
+function jumpToQuestion(index) {
+  activeEntry.wrongOnly = false; activeEntry.starredOnly = false; applyFilter();
+  const card = $('questions').children[index];
+  card.scrollIntoView({behavior:'smooth', block:'center'});
+  (activeEntry.submitted ? card : card.querySelector('input,textarea') || card).focus({preventScroll:true});
+  persist();
 }
 function applyFilter() {
-  $('wrong-btn').setAttribute('aria-pressed', String(activeEntry.wrongOnly));
+  $('wrong-btn').setAttribute('aria-pressed', String(Boolean(activeEntry.wrongOnly)));
   $('wrong-btn').textContent = activeEntry.wrongOnly ? '显示全部题目' : '只看错题';
-  [...$('questions').children].forEach(card => card.hidden = activeEntry.wrongOnly && card.dataset.wrong !== 'true');
+  $('starred-btn').setAttribute('aria-pressed', String(Boolean(activeEntry.starredOnly)));
+  $('starred-btn').textContent = activeEntry.starredOnly ? '显示全部题目' : '只看收藏';
+  [...$('questions').children].forEach((card, index) => {
+    card.hidden = Boolean((activeEntry.wrongOnly && card.dataset.wrong !== 'true') || (activeEntry.starredOnly && !(activeEntry.starredQuestions || []).includes(index)));
+  });
+  $('filter-empty').hidden = [...$('questions').children].some(card => !card.hidden);
 }
 function renderReview() {
   const entry = activeEntry, values = entry.answers; let correct = 0, objective = 0;
@@ -272,7 +298,7 @@ function renderReview() {
   $('questions').querySelectorAll('input,textarea').forEach(el => el.disabled = true);
   $('results').hidden = false;
   $('results').replaceChildren(node('span', 'SESSION COMPLETE', 'eyebrow'), node('h2', objective ? `${correct} / ${objective} 道客观题答对` : '完成一次主动回忆'), node('p', `${quiz.questions.length - objective} 道简答题请对照参考答案自评。可以展开每道题的原文出处。`));
-  $('submit-btn').hidden = true; $('review-actions').hidden = false; $('wrong-btn').disabled = correct === objective; applyFilter();
+  $('submit-btn').hidden = true; $('review-actions').hidden = false; $('wrong-btn').disabled = correct === objective; applyFilter(); renderQuestionMap();
 }
 function renderQuiz() {
   $('questions').replaceChildren(); $('results').hidden = true; $('submit-btn').hidden = false; $('review-actions').hidden = true;
@@ -286,7 +312,17 @@ function renderQuiz() {
   }));
   $('regenerate-btn').hidden = !group; $('extra-set-btn').hidden = !group; $('quiz-notice').textContent = quiz.notice;
   quiz.questions.forEach((q, i) => {
-    const card = node('article', undefined, 'card question');
+    const card = node('article', undefined, 'card question'); card.tabIndex = -1;
+    const star = node('button', (activeEntry.starredQuestions || []).includes(i) ? '★ 已收藏' : '☆ 收藏', 'question-star');
+    star.setAttribute('aria-pressed', String((activeEntry.starredQuestions || []).includes(i)));
+    star.setAttribute('aria-label', `收藏第 ${i + 1} 题`);
+    star.onclick = () => {
+      const selected = new Set(activeEntry.starredQuestions || []);
+      if (selected.has(i)) selected.delete(i); else selected.add(i);
+      activeEntry.starredQuestions = [...selected];
+      star.textContent = selected.has(i) ? '★ 已收藏' : '☆ 收藏'; star.setAttribute('aria-pressed', String(selected.has(i)));
+      renderQuestionMap(); applyFilter(); persist();
+    }; card.append(star);
     card.append(node('span', `QUESTION ${String(i + 1).padStart(2, '0')} / ${q.type === 'mcq' ? '选择题' : q.type === 'tf' ? '判断题' : '简答题'}`, 'q-number'), mathNode('h3', q.question));
     if (q.type === 'short') {
       const input = node('textarea'); input.id = `response-${i}`; input.value = activeEntry.answers[i] || '';
@@ -302,7 +338,7 @@ function renderQuiz() {
     activeEntry.answers = responses(); progress(); renderLibrary(); persist();
   }));
   if (activeEntry.submitted) renderReview();
-  progress(); view('quiz');
+  progress(); applyFilter(); view('quiz');
 }
 function openQuiz(entry) {
   activeEntry = entry; quiz = entry.quiz; workspace.activeQuizId = entry.id;
@@ -441,7 +477,7 @@ $('submit-btn').onclick = () => {
   const values = responses();
   if (values.some(r => !r.trim())) {
     message('还有题目未作答，请完成全部题目后查看解析。', true);
-    $('questions').children[values.findIndex(r => !r.trim())].querySelector('input,textarea').focus(); return;
+    jumpToQuestion(values.findIndex(r => !r.trim())); return;
   }
   activeEntry.answers = values; activeEntry.submitted = true;
   renderReview(); renderLibrary(); persist(); message('解析已展开。练习结果仅供自学参考。');
@@ -501,9 +537,22 @@ $('nav-quiz').onclick = () => {
   if (entry) openQuiz(entry); else message('请先创建练习并上传 PDF，或点击“体验示例测验”。');
 };
 $('retry-btn').onclick = () => {
-  activeEntry.answers = quiz.questions.map(() => ''); activeEntry.submitted = false; activeEntry.wrongOnly = false; activeEntry.expandedSources = [];
-  renderQuiz(); persist(); message('已开始重新练习。其他测验的作答记录会保留。'); $('quiz-view').scrollIntoView({behavior: 'smooth'});
+  if (!activeEntry || busy || booting) return;
+  $('retry-dialog').showModal(); $('retry-cancel').focus();
 };
+$('retry-cancel').onclick = () => $('retry-dialog').close();
+$('retry-confirm').onclick = () => {
+  if (!activeEntry || busy || booting) return;
+  $('retry-dialog').close();
+  activeEntry.answers = quiz.questions.map(() => ''); activeEntry.submitted = false;
+  activeEntry.wrongOnly = false; activeEntry.starredOnly = false; activeEntry.expandedSources = [];
+  renderQuiz(); persist(); message('已开始重新练习。收藏与其他测验的作答记录已保留。');
+  jumpToQuestion(0);
+};
+$('retry-dialog').addEventListener('close', () => $('retry-btn').focus());
+$('next-unanswered').onclick = () => { const index = activeEntry.answers.findIndex(answer => !answer.trim()); if (index >= 0) jumpToQuestion(index); };
+$('starred-btn').onclick = () => { activeEntry.starredOnly = !activeEntry.starredOnly; activeEntry.wrongOnly = false; applyFilter(); persist(); };
+$('show-all-questions').onclick = () => { activeEntry.starredOnly = false; activeEntry.wrongOnly = false; applyFilter(); persist(); };
 $('wrong-btn').onclick = () => { activeEntry.wrongOnly = !activeEntry.wrongOnly; applyFilter(); persist(); };
 window.addEventListener('beforeunload', e => { if (busy && !currentTask) { e.preventDefault(); e.returnValue = ''; } });
 window.addEventListener('pagehide', () => { if (!booting) persist(); });

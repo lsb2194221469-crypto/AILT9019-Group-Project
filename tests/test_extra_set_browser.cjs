@@ -11,7 +11,7 @@ source=source.replace('assert.deepEqual(errors,[]);', `
   assert.equal(await page.evaluate(id=>workspace.quizzes.find(q=>q.id===id).answers[0],before.id),'必须保留的原始答案');
   await saved(page);await reload(page);
   assert.equal(await page.evaluate(()=>workspace.quizzes.length),before.count+1);
-  await page.click('#sample-btn');await page.waitForFunction(()=>activeEntry.quiz.sample);
+  await page.click('#nav-create');await page.click('#sample-btn');await page.waitForFunction(()=>activeEntry.quiz.sample);
   assert(await page.locator('#extra-set-btn').isHidden());
   assert.deepEqual(errors,[]);
   console.log('PASS: one-click additional set, same PDFs/settings, independent ID, prior answers retained after reload, sample hides button.');`);

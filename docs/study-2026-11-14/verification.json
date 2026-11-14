@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-14",
+  "python_tests": 44,
+  "client_error_tests": "passed",
+  "history_and_study_flow": "passed",
+  "background_recovery": "passed (5 mock model calls for 5 tasks)",
+  "additional_set_and_history": "passed",
+  "editorial_layout": "passed (1440/768/390/360)",
+  "real_generation_api_called": false,
+  "checked": [
+    "upload/clear/reuse",
+    "mixed question settings",
+    "generation/history",
+    "answer/navigation",
+    "star filtering and persistence",
+    "hidden unanswered focus",
+    "review and wrong-only",
+    "restart confirm/cancel/Escape",
+    "delete and stale-tab saves",
+    "export",
+    "mobile layout"
+  ],
+  "live_source_hashes": {
+    "static/index.html": "cdc4f19fed4d88a1b21fb24521b9c3ee1a576a6a8deb54265ee520ebb501db83",
+    "static/app.js": "604f182a25cb27d512b8f3e360b829b6bffc69d1606761a652518bcad2f8df1e",
+    "static/minimal.css": "46b58f5159abbcbc7123ca44ed4976b73d6ab3939058123b96037a36b41ce214"
+  }
+}
