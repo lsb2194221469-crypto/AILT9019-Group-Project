@@ -23,7 +23,8 @@
   "captions": "English, burned into video and supplied as WebVTT",
   "processing_wait_removed": false,
   "minor_ui_polish_after_recording": "Adjacent crop baseline closure and incorrect-option background colour. The recorded generation/answers/history/rejection are unchanged.",
-  "provider_requests_for_recording": 2,
   "earlier_take": "A first real result was retained privately; its capture stopped on a recorder selector error. The published take is complete.",
-  "semantic_review": "Three demo answers checked against the author-written facts by Codex; not independent human accuracy evaluation."
+  "semantic_review": "Three demo answers checked against the author-written facts by Codex; not independent human accuracy evaluation.",
+  "browser_generation_jobs_for_recording": 2,
+  "provider_attempt_count": "Not instrumented for recording; browser jobs are counted separately from provider retries."
 }
