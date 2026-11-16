@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-16",
+  "public_page_http": 200,
+  "public_images": [
+    {
+      "src": "source-format-2026-11-16/integral-desktop.png",
+      "ok": true
+    },
+    {
+      "src": "source-format-2026-11-16/wrong-answer-desktop.png",
+      "ok": true
+    }
+  ],
+  "desktop_mobile_passed": true,
+  "review_items": 41,
+  "rendered_math": 216,
+  "source_images": 41,
+  "math_errors": 0,
+  "browser_errors": []
+}

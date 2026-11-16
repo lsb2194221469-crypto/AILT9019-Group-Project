@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-16",
+  "commit": "e75bf826369ab8b9dc5b12254f91a390fcf9fd52",
+  "source": "fresh public GitHub archive",
+  "tests": 53,
+  "passed": true,
+  "offline_example_passed": true,
+  "api_key_present": false,
+  "calls_real_model": false,
+  "environment": "Windows; existing Python 3.13.16 runtime with pinned pypdf 6.21.1 and PyMuPDF 2.0 reused. Source is fresh; dependency installation was not repeated.",
+  "public_page": {
+    "url": "https://lsb2194221469-crypto.github.io/AILT9019-Group-Project/",
+    "status": 200,
+    "content_verified": true
+  }
+}
