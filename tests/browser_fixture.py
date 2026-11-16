@@ -19,7 +19,8 @@ def provider(path,payload,config):
         provider_state['calls'] += 1
         delay = provider_state['delay_ms']
     time.sleep(delay / 1000)
-    request = json.loads(payload['messages'][1]['content'])
+    content = payload['messages'][1]['content']
+    request = json.loads(content[0]['text'] if isinstance(content,list) else content)
     source = request['source_pages'][0]
     assert 'x^{2}' in source['math_context']
     questions = []

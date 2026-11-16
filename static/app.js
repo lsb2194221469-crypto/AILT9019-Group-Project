@@ -171,7 +171,7 @@ function selectGroup(group) {
   $('source-document').replaceChildren(...docs.map(doc => new Option(doc.name, doc.id)));
   $('source-files').replaceChildren(...docs.map(doc => node('li', doc.name)));
   $('filename').textContent = `${docs.length} 份讲义 · 联合出题`;
-  $('page-count').textContent = `共 ${docs.reduce((sum, doc) => sum + doc.pages.length, 0)} 页包含可读文字`;
+  $('page-count').textContent = `共 ${docs.reduce((sum, doc) => sum + doc.pages.length, 0)} 页 · 全部页文字与整页图像提交 · 每组上限 80 页`;
   selectDocument(docs.find(doc => doc.id === workspace.activeDocumentId) || docs[0]);
   for (const kind of kinds) $('count-' + kind).value = group.settings.counts[kind];
   $('topic').value = group.settings.topic;
@@ -226,7 +226,10 @@ async function uploadFiles(files) {
     for (const doc of candidates) {
       message(`正在读取 ${doc.name}…`);
       try {
-        if (!findDocument(doc.id)) { await readSource(doc); workspace.documents.push(doc); }
+        if (!findDocument(doc.id)) { await readSource(doc); }
+        const selectedPages = [...previousIds, ...addedIds].reduce((sum, id) => sum + findDocument(id).pages.length, 0);
+        if (selectedPages + doc.pages.length > 80) throw new Error('加入后超过每组 80 页上限，请拆分 PDF。本文件未加入，已有选择保留。');
+        if (!findDocument(doc.id)) workspace.documents.push(doc);
         addedIds.push(doc.id);
       } catch (e) { failures.push(`${doc.name}：${e.message}`); }
     }

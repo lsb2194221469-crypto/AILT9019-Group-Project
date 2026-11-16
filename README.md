@@ -1,5 +1,6 @@
 # Lecture Lab · AILT9019 Group 61
 
+
 [项目介绍与真实测试结果 / Public project webpage](https://lsb2194221469-crypto.github.io/AILT9019-Group-Project/)
 
 
@@ -12,12 +13,23 @@
 
 
 
-<!-- PUBLIC_ENTRY_START -->
-## [▶ 打开出题网页](https://witness-raw-herbs-communicate.trycloudflare.com)
 
-访客点击上方链接即可上传 PDF、生成练习。无需下载项目、安装 Python 或填写 API Key。
 
-出题使用项目主机的 API 额度。主机和外网服务须保持运行；临时地址重启后会变化。
+
+
+
+
+
+
+
+
+
+<!-- PUBLIC_ENTRY_START -->
+## [▶ 打开出题网页](https://witness-raw-herbs-communicate.trycloudflare.com)
+
+访客点击上方链接即可上传 PDF、生成练习。无需下载项目、安装 Python 或填写 API Key。
+
+出题使用项目主机的 API 额度。主机和外网服务须保持运行；临时地址重启后会变化。
 <!-- PUBLIC_ENTRY_END -->
 
 
@@ -30,7 +42,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+## 完整阅读模式（2026-11-16 更新）
+
+每组最多 10 份 PDF，合计最多 **80 页**，每份最大 15 MB。程序将所有页面的完整提取文字、公式提示及每页原图一起发送给配置的 DeepSeek Flash；主题只影响出题重点。超过 **300 KB 全文与公式提示**或 **32 MB 整组请求**时明确拒绝，需减少文件或拆分，不会截短文字或只选部分页面。
+
+纯扫描件仍需先 OCR，才能提供可逐字核对的引用。完整提交不等于模型一定理解每个符号；细小文字、模糊图像和复杂公式仍需对照原 PDF 检查。模型请求中包括整页图片，请仅上传允许发送给模型服务的资料。
+
+实现、限制与验证见 [完整阅读说明](docs/FULL_READING.md)。
+
 **上传课程 PDF，一次生成选择、判断和简答的混合练习，并查看答案、解析与原文出处。**
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -54,7 +98,31 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 访客使用仓库顶部的网页入口即可。下面的安装和 API 配置步骤只面向自行运行源码或维护主机的人。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -78,7 +146,31 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 2026-10-23 验证：两个全新、无登录和无密钥配置的浏览器会话，经当前公开 HTTPS 入口上传合成 PDF，实际调用主机 DeepSeek 分别生成选择/判断/简答各 1 道及判断 1 道，完成作答并验证刷新恢复。测试在主机上使用公开域名发起，覆盖桌面和手机尺寸，不等同于不同国家或真实手机的实机测试；独立网页读取工具未能访问该临时域名。详见 [验证记录](VALIDATION.md)及[本次测试结果](docs/PUBLIC_ACCESS_CHECK.json)。恢复后的新域名已通过三个香港节点的首页及后台健康接口检查，详情见 [香港检测](docs/HONG_KONG_CHECK.json)；[服务恢复与自动同步记录](docs/PUBLIC_RESTART_CHECK.json)说明了验证范围。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -95,7 +187,22 @@ Lecture Lab is a local PDF-to-quiz application powered by a configurable DeepSee
 
 
 
+
+
+
+
+
 ## Reproduce the assessed core workflow
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -115,7 +222,27 @@ For course staff: download the two-page [example PDF](examples/math-notes.pdf), 
 
 
 
+
+
+
+
+
+
+
+
+
+
 After installing `requirements.txt`, run `python tools/reproduce_example.py` to check the saved result against the PDF **without an API key**. Expected: exit 0 and `passed: true`, with two input pages and one question of each type. This is a saved-output check, not a new generation call. To generate again with your configured API, run `python tools/reproduce_example.py --live --output .example-runs/latest.json`; this consumes provider quota. API output wording can vary, so check supported facts and citations rather than exact text.
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -130,7 +257,27 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
 <!-- REPRODUCIBLE_EXAMPLE_END -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -157,7 +304,25 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 - [安装与运行](#安装与运行)
+
+
+
+
+
+
 
 
 
@@ -169,7 +334,19 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 - [主要功能](#主要功能)
+
+
+
+
+
+
 
 
 
@@ -181,7 +358,19 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 - [实现与接口说明](docs/ARCHITECTURE.md)
+
+
+
+
+
+
 
 
 
@@ -193,13 +382,37 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 - [Windows 中文使用说明](使用说明.txt)
 
 
 
 
 
+
+
+
+
+
+
 - [第三方组件与许可](THIRD_PARTY.txt)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -223,7 +436,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ### Windows：从本仓库源码启动
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -247,7 +484,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 1. 点击仓库的 **Code → Download ZIP** 并解压；也可以使用 Git：
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -265,13 +526,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
    git clone https://github.com/lsb2194221469-crypto/AILT9019-Group-Project.git
 
 
 
 
 
+
+
+
+
+
+
    cd AILT9019-Group-Project
+
+
+
+
+
+
 
 
 
@@ -289,7 +568,25 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 2. 双击 `configure.bat`，在记事本打开的 `config.json` 中填写 API 配置并保存。密钥填写在本地文件里，网页不提供密钥输入框。
+
+
+
+
+
+
 
 
 
@@ -301,7 +598,19 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 4. 上传 PDF（每组最多 10 份，可分多次选择并联合出题），分别拖动三个题量滑条，点击“生成我的练习”。可先将每种题型设为 1 道进行尝试。
+
+
+
+
+
+
 
 
 
@@ -313,13 +622,37 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 6. 生成任务提交后可以切换窗口、刷新或关闭标签页；在相同网址重新打开会自动取回结果，不必再次点生成。主机服务须保持运行，不能关机或睡眠。后台结果保留 24 小时，浏览器成功取回后按普通测验长期保存在本机。
 
 
 
 
 
+
+
+
+
+
+
 7. 每套练习旁的垃圾箱按钮，或当前测验工具栏的“删除测验”，可删除指定测验及其作答；确认前可取消，PDF 和其他测验不会被删除。重复生成会新增独立练习，多个标签页保存时会合并历史记录。更新后请刷新所有打开的项目页面。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -343,7 +676,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ### 已有 Windows 便携包
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -367,7 +724,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ### 主机：让其他人从 GitHub 直接打开网页
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -391,7 +772,25 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 - 主机关闭旧的本地启动窗口，再双击 `public.bat`；首次会下载并校验官方 Cloudflare 隧道程序，后续复用。
+
+
+
+
+
+
 
 
 
@@ -403,7 +802,19 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 - 主机保持开机并运行服务。`stop_public.bat` 可关闭公开服务及对应隧道；停止操作仅接受本机私有令牌。
+
+
+
+
+
+
 
 
 
@@ -415,7 +826,25 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
 - 公网模式仅绑定本机回环端口，由隧道接入。密钥只在主机配置文件中，不放进 GitHub、启动文件或浏览器。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -439,7 +868,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 维护者在 Windows 便携目录运行 `powershell -NoProfile -ExecutionPolicy Bypass -File tools/install_public_startup.ps1` 可安装当前用户的登录启动快捷方式。该安装已在维护者本机完成；普通访客无需执行。电脑必须保留此项目目录和 Python 运行时，并在 Git Credential Manager 中保持对应 GitHub 仓库的可写登录状态。程序通过 Git 凭据助手在内存中取得凭据，不复制到项目、网页或 GitHub；DeepSeek API 配置仍只保存在主机。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -463,7 +916,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 这是**登录后自动启动**，不是未登录 Windows 时运行的系统服务。关机和睡眠期间不可用，重启后恢复也不是瞬时的；GitHub 凭据过期、撤权、仓库保护规则或网络异常会阻止更新。仓库已公开，其他人可以直接从 GitHub 首页取得最新地址；阅读仓库和使用网站均不需要 GitHub 账号或仓库授权。香港节点检测记录见 [HONG_KONG_CHECK.json](docs/HONG_KONG_CHECK.json)，网络节点可达不等于所有香港运营商或所有用户均已验证。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -487,7 +964,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 关闭原来的启动窗口，双击 `share.bat`（或运行 `python launch.py --share`）。启动窗口会列出 `Same-network link: http://你的局域网IP:8765`，其他人连接同一 Wi-Fi/局域网后打开该链接即可使用网页，无需安装程序或填写 API Key。Windows 如提示防火墙访问，允许该程序在你信任的网络通信。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -511,7 +1012,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 这是局域网共享入口，跨网络或公网访问仍需另行配置。本机 `start.bat` 继续只监听回环地址；`share.bat` 显式启用 IPv4 共享。若本地模式已占用端口，共享入口会提示关闭旧窗口，避免误把旧服务当成共享服务。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -535,7 +1060,31 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ### 手动运行 / macOS / Linux
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -559,7 +1108,25 @@ The public application link at the top uses the project host's API while that ho
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```sh
+
+
+
+
+
+
 
 
 
@@ -571,7 +1138,25 @@ python -m venv .venv
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -595,7 +1180,25 @@ python -m venv .venv
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```powershell
+
+
+
+
+
+
 
 
 
@@ -607,7 +1210,19 @@ python -m venv .venv
 
 
 
+
+
+
+
+
+
 .venv\Scripts\Activate.ps1
+
+
+
+
+
+
 
 
 
@@ -625,7 +1240,25 @@ python -m venv .venv
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```sh
+
+
+
+
+
+
 
 
 
@@ -637,13 +1270,37 @@ python -m venv .venv
 
 
 
+
+
+
+
+
+
 source .venv/bin/activate
 
 
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -661,13 +1318,37 @@ source .venv/bin/activate
 
 
 
+
+
+
+
+
+
 python -m pip install -r requirements.txt
 
 
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -691,7 +1372,25 @@ python -m pip install -r requirements.txt
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```sh
+
+
+
+
+
+
 
 
 
@@ -703,7 +1402,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -727,7 +1444,31 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## API 配置
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -751,7 +1492,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```json
+
+
+
+
+
+
 
 
 
@@ -763,7 +1522,19 @@ python launch.py
 
 
 
+
+
+
+
+
+
   "api_key": "在自己的电脑填写真实密钥",
+
+
+
+
+
+
 
 
 
@@ -775,13 +1546,31 @@ python launch.py
 
 
 
+
+
+
+
+
+
   "model": "deepseek-flash"
 
 
 
 
 
+
+
+
+
+
+
 }
+
+
+
+
+
+
 
 
 
@@ -799,7 +1588,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 - `api_key`：服务商签发的 API Key。保留两侧英文双引号，不要提交到 GitHub。
+
+
+
+
+
+
 
 
 
@@ -811,7 +1618,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
 - `model`：服务商支持的确切模型 ID。模板值只是默认配置；如果使用 Cherry Studio，请核对其中同一服务商的接口地址及模型名称。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -835,7 +1660,31 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 `config.json` 已被 Git 忽略，HTTP 服务也不会提供此文件。密钥以明文保存在本机，分享项目时只分享空白模板。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -859,7 +1708,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 | 功能 | 行为 |
+
+
+
+
+
+
 
 
 
@@ -871,7 +1738,19 @@ python launch.py
 
 
 
-| PDF 导入 | 每组最多 10 份文字型 PDF，每份最大 15 MB、200 页；可分多次选择、自动去重 |
+
+
+
+
+
+
+| PDF 导入 | 每组最多 10 份文字型 PDF，每份最大 15 MB，每组所有文件合计最多 80 页；可分多次选择、自动去重 |
+
+
+
+
+
+
 
 
 
@@ -883,7 +1762,19 @@ python launch.py
 
 
 
+
+
+
+
+
+
 | 本机记录 | 切换讲义、测验或刷新页面后，恢复答案、评分、错题筛选和原文展开状态 |
+
+
+
+
+
+
 
 
 
@@ -895,7 +1786,19 @@ python launch.py
 
 
 
+
+
+
+
+
+
 | 主题筛选 | 优先选取包含主题关键词的讲义页 |
+
+
+
+
+
+
 
 
 
@@ -907,7 +1810,19 @@ python launch.py
 
 
 
+
+
+
+
+
+
 | 原文依据 | 引用保持原始提取文字用于核验；阅读时显示 PDF 原页片段，保留积分、概率算子、上下标等排版，可打开原页 |
+
+
+
+
+
+
 
 
 
@@ -919,7 +1834,25 @@ python launch.py
 
 
 
+
+
+
+
+
+
 | 导出 | 下载包含题目、答案、解析与出处的 JSON |
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -943,7 +1876,31 @@ python launch.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 PDF 在本机解析。生成时会将选中的提取文字、公式阅读提示、文件名、页码与主题发送到配置的模型服务；不会上传原 PDF 文件。云端 API 可能收费，按服务商账户计费，本项目无需网站托管费用。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -967,7 +1924,31 @@ PDF 在本机解析。生成时会将选中的提取文字、公式阅读提示�
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；刷新或停止并重新启动本地服务后仍可恢复，继续出题时会按需重新解析已保存的 PDF。记录不跨浏览器、设备或网址同步，清除站点数据会删除记录；重要测验可导出 JSON 备份。浏览器保存不可用时会提示，本页仍可继续使用。API Key 只在本机配置文件中，不进入浏览器数据库。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -991,7 +1972,31 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## 项目结构
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1009,7 +2014,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 .
+
+
+
+
+
+
 
 
 
@@ -1021,7 +2038,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── generation_jobs.py     # 后台生成、同任务去重与私有结果缓存（24 小时）
+
+
+
+
+
+
 
 
 
@@ -1033,7 +2062,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── launch.py              # 启动本地服务、检查端口、打开浏览器
+
+
+
+
+
+
 
 
 
@@ -1045,7 +2086,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── share.bat              # 同一局域网共享入口，使用主机的 API 账户
+
+
+
+
+
+
 
 
 
@@ -1057,7 +2110,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── public_host.py         # 校验官方隧道、管理公开服务与关闭操作
+
+
+
+
+
+
 
 
 
@@ -1069,7 +2134,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── configure.bat          # 在记事本编辑本机配置
+
+
+
+
+
+
 
 
 
@@ -1081,7 +2158,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── config.example.json    # 可公开分享的空白配置模板
+
+
+
+
+
+
 
 
 
@@ -1093,7 +2182,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── static/
+
+
+
+
+
+
 
 
 
@@ -1105,7 +2206,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 │   ├── app.js             # 多 PDF / 多测验状态、生成、作答、评分、导出
+
+
+
+
+
+
 
 
 
@@ -1117,7 +2230,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 │   ├── platform.js        # 局域网 HTTP 的 PDF 哈希及随机 ID 兼容
+
+
+
+
+
+
 
 
 
@@ -1129,7 +2254,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 │   ├── style.css          # 桌面及手机样式
+
+
+
+
+
+
 
 
 
@@ -1141,7 +2278,19 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 ├── tests/                 # 离线单元测试，不调用真实模型
+
+
+
+
+
+
 
 
 
@@ -1153,13 +2302,37 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
 └── tools/build_portable.py # 构建 Windows x64 便携包
 
 
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1183,7 +2356,31 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## 测试与打包
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1207,7 +2404,25 @@ PDF、测验及各自的作答记录保存在当前浏览器的 IndexedDB 中；
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```sh
+
+
+
+
+
+
 
 
 
@@ -1219,7 +2434,25 @@ python -m unittest discover -s tests -v
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1243,7 +2476,31 @@ python -m unittest discover -s tests -v
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 如本机装有 Node.js，可额外检查脚本语法：
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1261,7 +2518,19 @@ python -m unittest discover -s tests -v
 
 
 
+
+
+
+
+
+
 node --check static/app.js
+
+
+
+
+
+
 
 
 
@@ -1273,13 +2542,37 @@ node --check static/library.js
 
 
 
+
+
+
+
+
+
 node --check static/format.js
 
 
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1303,7 +2596,25 @@ node --check static/format.js
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ```sh
+
+
+
+
+
+
 
 
 
@@ -1315,7 +2626,25 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1339,7 +2668,31 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## 常见问题
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1357,7 +2710,19 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
 - **8765 端口占用**：关闭之前运行的项目实例或占用端口的应用，再启动。
+
+
+
+
+
+
 
 
 
@@ -1369,7 +2734,19 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
 - **生成数量少于设置**：界面会显示实际/请求数量；材料不足或题目未通过结构与引用检查时会少生成。
+
+
+
+
+
+
 
 
 
@@ -1381,7 +2758,25 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
 - **API 报错**：核对密钥、余额、HTTPS 地址和模型 ID；第三方网关需支持兼容的聊天接口及 JSON 模式。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1403,7 +2798,22 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
+
+
+
 <!-- REVIEW_2026_11_12 -->
+
+
+
+
+
 
 
 
@@ -1418,7 +2828,27 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
+
+
+
 修复异常模型字段、超长选项、请求超时及任务导入失败后的无限等待。40 项 Python 测试、前端异常检查、历史与后台恢复浏览器回归通过；本轮全部使用模拟模型，不消耗真实 API 额度。
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1441,7 +2871,28 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 2026-11-13 极简工作台
+
+
+
+
+
+
+
+
 
 
 
@@ -1459,7 +2910,23 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
+
+
+
 ## 2026-11-13 编辑式设计重构
+
+
+
+
+
+
 
 
 
@@ -1472,17 +2939,38 @@ python tools/build_portable.py
 
 
 
+
+
+
+
+
+
+
 模型连接异常：程序会在本机代理拒绝连接或不响应时自动直连，不改系统设置；[排查及验证说明](docs/MODEL_CONNECTION.md)。
+
+
+
+
 
 
 
 ## 2026-11-14 答题体验
 
+
+
 新增题号导航、跳转未答题、题目收藏和收藏筛选；重新练习前确认清空，取消或 Escape 不丢失作答。修复筛选隐藏漏答题时无法定位的问题。[流程检查与验证说明](docs/STUDY_FLOW_REVIEW.md)。
+
+
+
 
 
 ## 2026-11-16 原文公式与最终评估
 
+
+
 原文依据和上传预览直接还原 PDF 排版，保留积分、上下限、概率算子、根号和矩阵等符号；原始提取文字仍折叠保留。错题增加红色标记、所选答案与参考答案对照。[修复与测试](docs/SOURCE_FORMAT.md)。
 
+
+
 使用三个 SDST2601 讲义节选进行了两轮真实模型评估：初始返回 20/21 道，修改规则后返回 21/21 道。已记录延迟、五项实际边界测试和未解决的选择题歧义；尚无独立人工正确率评估。[方法、结果及限制](docs/EVALUATION.md)。
+

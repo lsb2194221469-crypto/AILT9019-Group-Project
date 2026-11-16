@@ -44,7 +44,7 @@ def layout_text(page):
                 previous = char
             flush()
             output.append(''.join(parts))
-    return '\n'.join(output)[:16000]
+    return '\n'.join(output)
 
 
 def math_contexts(data):

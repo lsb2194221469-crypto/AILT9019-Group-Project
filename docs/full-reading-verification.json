@@ -1,0 +1,52 @@
+{
+  "documents": 3,
+  "physical_pages": 39,
+  "provider_calls": 1,
+  "complete_text_verified": true,
+  "all_page_images_verified": true,
+  "request_bytes": 6073721,
+  "full_text_chars": 11959,
+  "succeeded": true,
+  "actual_counts": {
+    "mcq": 0,
+    "tf": 1,
+    "short": 1
+  },
+  "reading": {
+    "mode": "all_pages_no_truncation",
+    "pages": 39,
+    "page_images": 39
+  },
+  "automated_tests": 60,
+  "automated_tests_passed": true,
+  "browser_checks": "simulated provider: study flow, history, original evidence, mobile, recovery",
+  "limits": {
+    "pdf_count": 10,
+    "total_pages": 80,
+    "text_hint_bytes": 300000,
+    "request_bytes": 33554432
+  },
+  "boundary_checks": {
+    "not_a_pdf": {
+      "rejected": true,
+      "message": "Please select a valid PDF file."
+    },
+    "blank_pdf": {
+      "rejected": true,
+      "message": "Not enough readable source material. Scanned PDFs need OCR first."
+    },
+    "password_protected": {
+      "rejected": true,
+      "message": "Password-protected PDFs are not supported. Upload an unlocked copy."
+    },
+    "scanned_image_only": {
+      "rejected": true,
+      "message": "Not enough readable source material. Scanned PDFs need OCR first."
+    },
+    "over_80_pages": {
+      "rejected": true,
+      "message": "Please use a PDF with 80 pages or fewer. No pages were omitted."
+    }
+  },
+  "semantic_accuracy": "not established by full-input submission"
+}
