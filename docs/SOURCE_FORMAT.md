@@ -10,6 +10,8 @@ Uploading/previewing and citation expansion render through the same-origin Pytho
 
 Question/option/answer/explanation LaTeX now canonicalises explicit named operators such as `Pr`, `\mathrm{P r}` and `\operatorname{V a r}`. Ordinary prose, raw quotations, products such as `P r(x)` and ambiguous `x2` are not rewritten. The generation prompt asks for correctly typeset operators and complete supporting quotations; it skips unresolved source formulas instead of inventing symbols.
 
-Wrong objective answers show an explicit red “回答错误” banner, a red card border, the selected answer and the reference answer. The corresponding question number is marked red and labelled for assistive technology. Short answers remain self-assessed and are never automatically marked wrong.
+Wrong objective answers show an explicit red “回答错误” banner, a red card border, the selected answer and the reference answer. The incorrect selected option also turns red, replacing the neutral green selection styling. The corresponding question number is marked red and labelled for assistive technology. Short answers remain self-assessed and are never automatically marked wrong.
+
+The final crop check also closes the excerpt over every touched text baseline, including lines reached by padding around tall formulas. This avoids showing only the top or bottom of an adjacent line. The original PDF glyphs remain unchanged; additional context is shown when needed.
 
 Checks: `python -m unittest discover -s tests -v`, `node tests/test_math_format.cjs`, `node tests/test_source_preview_browser.cjs` and `node tests/test_study_flow_browser.cjs`. Browser tests use a dummy provider, including legacy lossy quotes, integral limits, multiple PDFs sharing page 1, refresh, mobile, offline failure/retry and the wrong-answer feedback. Screenshots and the browser record are under `source-format-2026-11-16/`.

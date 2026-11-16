@@ -50,6 +50,7 @@ assert.equal(made.status, 0, String(made.stderr));
     assert.equal(await page.locator('#questions .katex-error').count(), 0);
     assert.equal(await page.locator('.answer-status.is-wrong').count(), 1);
     assert.equal(await page.locator('.your-wrong-answer').count(), 1);
+    assert.equal(await page.locator('#questions>article[data-wrong=true] .option:has(input:checked)').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(255, 240, 236)');
     assert.equal(await page.locator('.question-jump.is-wrong').count(), 1);
     assert.equal(await page.evaluate(() => window.pwned), undefined);
     const alts = await page.locator('#questions .source-image').evaluateAll(images => images.map(image=>image.alt));

@@ -51,6 +51,14 @@ class SourcePreviewTests(unittest.TestCase):
             self.assertLess(clip.y0, 200)
             self.assertGreater(clip.y1, 268)  # both integral limits included
             self.assertLess(clip.y1, 650)
+            # Padding must never expose only half an adjacent baseline, even
+            # after a tall operator has expanded the original crop region.
+            for block in page.get_text('dict')['blocks']:
+                for line in block.get('lines', []):
+                    box = pymupdf.Rect(line['bbox'])
+                    if box.y0 < clip.y1 and box.y1 > clip.y0:
+                        self.assertLessEqual(clip.y0, box.y0)
+                        self.assertGreaterEqual(clip.y1, box.y1)
             scale = min(2., 1200 / clip.width, 2200 / clip.height,
                         (2_500_000 / (clip.width * clip.height)) ** .5)
             expected = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), clip=clip,

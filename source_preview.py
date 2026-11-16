@@ -58,13 +58,20 @@ def citation_clip(page, quote):
     # Include complete nearby text lines, fraction bars and generous padding for
     # large operators/limits; avoid shrinking a short formula to a full-page width.
     top, bottom = clip.y0 - 28, clip.y1 + 28
-    for block in page.get_text('dict')['blocks']:
-        for line in block.get('lines', []):
-            box = pymupdf.Rect(line['bbox'])
+    lines = [pymupdf.Rect(line['bbox']) for block in page.get_text('dict')['blocks']
+             for line in block.get('lines', [])]
+    # A newly included tall formula may reach another baseline beyond the
+    # original padding. Close the vertical region over every touched line so
+    # no adjacent text is left half-visible at a crop edge.
+    for _ in range(len(lines) + 1):
+        old_top, old_bottom = top, bottom
+        for box in lines:
             if box.y0 < bottom and box.y1 > top:
                 clip |= box
-    clip = pymupdf.Rect(clip.x0 - 24, min(top, clip.y0 - 3), clip.x1 + 24,
-                        max(bottom, clip.y1 + 3)) & page.rect
+        top, bottom = min(top, clip.y0 - 3), max(bottom, clip.y1 + 3)
+        if top == old_top and bottom == old_bottom:
+            break
+    clip = pymupdf.Rect(clip.x0 - 24, top, clip.x1 + 24, bottom) & page.rect
     return clip, 'excerpt' if clip.height < page.rect.height * .9 else 'page'
 
 

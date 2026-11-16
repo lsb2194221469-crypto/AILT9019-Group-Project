@@ -1,0 +1,19 @@
+Automated browser walkthrough with synthetic English narration. Real model call.
+
+This is Lecture Lab, Group sixty one. This recording is an automated browser walkthrough with synthetic narration. The generation request is real, not a prewritten sample. The public project page links to the running application, source code, and measured evaluation results.
+
+We open a fresh browser session and upload the project's own two page mathematics example. It contains no student data. We request one multiple choice, one true or false, and one short answer question. These are three independent quantity controls.
+
+Now we submit the real request to the configured DeepSeek service. The API key stays on the host and is not shown to the browser. This continuous recording keeps the processing wait visible. Output can vary between runs, and service or quota failures remain possible.
+
+The completed set is now visible. We check the actual question types and source identities against the request. Generated mathematics is rendered with KaTeX. Structural checks and matching quotations help traceability, but they do not prove that every answer or distractor is correct.
+
+For this demonstration, we deliberately choose an incorrect objective answer and complete the other inputs. After submission, the wrong answer has a prominent red message, the selected answer is shown, and the reference answer is highlighted. Short answers require self assessment; this is not automatic semantic grading.
+
+Opening the evidence displays the actual original PDF passage, preserving its mathematical glyphs and spacing. The raw extracted text remains available separately, because extraction can lose symbols. We can compare the model explanation directly with the source rather than trusting a matching citation alone.
+
+Next we refresh the page. The quiz, answers, and review state persist in the same browser and origin. Separate generated sets have separate history entries. This is local browser storage, not cross device account synchronisation, and a changed hostname does not automatically migrate these records.
+
+Here is an actual boundary case. We upload an image only scan of the same author written example. The parser rejects it with an instruction to use O C R first. This application does not claim built in O C R. The rejection occurs before any additional model generation request.
+
+Finally, the public evaluation records real course material runs separately from mocked interface tests. Revised runs retained twenty one of twenty one requested questions, versus twenty of twenty one initially, in a small exploratory comparison. An ambiguous distractor remains documented. There is no independent human accuracy estimate. The owner computer, network, tunnel, and API quota must remain available.

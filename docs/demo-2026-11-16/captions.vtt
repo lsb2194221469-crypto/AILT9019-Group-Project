@@ -1,0 +1,111 @@
+WEBVTT
+
+00:00:01.661 --> 00:00:07.176
+This is Lecture Lab, Group sixty one. This recording is an automated browser
+walkthrough with
+
+00:00:07.176 --> 00:00:12.692
+synthetic narration. The generation request is real, not a prewritten sample. The
+public project page
+
+00:00:12.692 --> 00:00:18.207
+links to the running application, source code, and measured evaluation results.
+
+00:00:20.220 --> 00:00:25.404
+We open a fresh browser session and upload the project's own two page mathematics
+example.
+
+00:00:25.404 --> 00:00:30.588
+It contains no student data. We request one multiple choice, one true or false,
+and
+
+00:00:30.588 --> 00:00:35.772
+one short answer question. These are three independent quantity controls.
+
+00:00:37.777 --> 00:00:43.043
+Now we submit the real request to the configured DeepSeek service. The API key
+stays
+
+00:00:43.043 --> 00:00:48.308
+on the host and is not shown to the browser. This continuous recording keeps the
+
+00:00:48.308 --> 00:00:53.574
+processing wait visible. Output can vary between runs, and service or quota
+failures remain possible.
+
+00:00:55.590 --> 00:01:01.075
+The completed set is now visible. We check the actual question types and source
+identities
+
+00:01:01.075 --> 00:01:06.561
+against the request. Generated mathematics is rendered with KaTeX. Structural
+checks and matching quotations help
+
+00:01:06.561 --> 00:01:12.046
+traceability, but they do not prove that every answer or distractor is correct.
+
+00:01:14.057 --> 00:01:18.605
+For this demonstration, we deliberately choose an incorrect objective answer and
+complete the other inputs.
+
+00:01:18.605 --> 00:01:23.152
+After submission, the wrong answer has a prominent red message, the selected
+answer is shown,
+
+00:01:23.152 --> 00:01:27.700
+and the reference answer is highlighted. Short answers require self assessment;
+this is not automatic
+
+00:01:27.700 --> 00:01:32.247
+semantic grading.
+
+00:01:34.250 --> 00:01:40.039
+Opening the evidence displays the actual original PDF passage, preserving its
+mathematical glyphs and spacing.
+
+00:01:40.039 --> 00:01:45.827
+The raw extracted text remains available separately, because extraction can lose
+symbols. We can compare
+
+00:01:45.827 --> 00:01:51.616
+the model explanation directly with the source rather than trusting a matching
+citation alone.
+
+00:01:53.621 --> 00:01:59.566
+Next we refresh the page. The quiz, answers, and review state persist in the same
+
+00:01:59.566 --> 00:02:05.512
+browser and origin. Separate generated sets have separate history entries. This is
+local browser storage,
+
+00:02:05.512 --> 00:02:11.457
+not cross device account synchronisation, and a changed hostname does not
+automatically migrate these records.
+
+00:02:13.475 --> 00:02:17.710
+Here is an actual boundary case. We upload an image only scan of the same
+
+00:02:17.710 --> 00:02:21.946
+author written example. The parser rejects it with an instruction to use O C R
+
+00:02:21.946 --> 00:02:26.181
+first. This application does not claim built in O C R. The rejection occurs before
+
+00:02:26.181 --> 00:02:30.416
+any additional model generation request.
+
+00:02:43.750 --> 00:02:50.029
+Finally, the public evaluation records real course material runs separately from
+mocked interface tests. Revised
+
+00:02:50.029 --> 00:02:56.307
+runs retained twenty one of twenty one requested questions, versus twenty of
+twenty one initially,
+
+00:02:56.307 --> 00:03:02.586
+in a small exploratory comparison. An ambiguous distractor remains documented.
+There is no independent human
+
+00:03:02.586 --> 00:03:08.864
+accuracy estimate. The owner computer, network, tunnel, and API quota must remain
+available.

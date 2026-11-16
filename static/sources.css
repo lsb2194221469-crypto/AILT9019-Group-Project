@@ -12,6 +12,8 @@
 .answer-status.is-wrong{color:#a42520;background:#fff0ec;border-left:4px solid #ba3229}
 .answer-status.is-correct{color:#37613b;background:#edf4e9;border-left:3px solid #6e8d59}
 #questions>article[data-wrong=true]{border-left:4px solid #ba3229;padding-left:18px;background:linear-gradient(90deg,#fff3ef,transparent 65%)}
+#questions>article[data-wrong=true] .option:has(input:checked){background:#fff0ec;border-color:#ba3229;color:#a42520}
+#questions>article[data-wrong=true] .option input:checked{accent-color:#ba3229}
 .your-wrong-answer{color:#a42520;font-weight:600}
 .correct-answer{color:#2c603c;font-weight:600}
 .question-jump.is-wrong{color:#a42520;border-color:#ba3229;background:#fff0ec}
