@@ -150,7 +150,11 @@ function renderLibrary() {
   sync();
 }
 function showPage() {
-  $('source-preview').textContent = documentData?.pages.find(p => String(p.page) === $('page-select').value)?.text || '';
+  const page = documentData?.pages.find(p => String(p.page) === $('page-select').value);
+  $('source-preview').textContent = '';
+  if (!page) return;
+  const preview = LectureSources.create(documentData, page.page);
+  $('source-preview').append(preview.element); preview.load();
 }
 function selectDocument(doc) {
   documentData = doc; workspace.activeDocumentId = doc.id;
@@ -256,7 +260,9 @@ function renderQuestionMap() {
     const starred = (activeEntry.starredQuestions || []).includes(index);
     const button = node('button', String(index + 1) + (starred ? ' ★' : ''), 'question-jump');
     button.classList.toggle('answered', answered);
-    button.setAttribute('aria-label', `第 ${index + 1} 题，${answered ? '已答' : '未答'}${starred ? '，已收藏' : ''}`);
+    const wrong = activeEntry.submitted && question.type !== 'short' && activeEntry.answers[index] !== question.answer;
+    button.classList.toggle('is-wrong', Boolean(wrong));
+    button.setAttribute('aria-label', `第 ${index + 1} 题，${answered ? '已答' : '未答'}${wrong ? '，回答错误' : ''}${starred ? '，已收藏' : ''}`);
     button.onclick = () => jumpToQuestion(index); map.append(button);
   });
   $('next-unanswered').hidden = activeEntry.submitted;
@@ -283,12 +289,25 @@ function renderReview() {
   const entry = activeEntry, values = entry.answers; let correct = 0, objective = 0;
   quiz.questions.forEach((q, i) => {
     const answer = $(`answer-${i}`); answer.hidden = false; answer.replaceChildren();
+    const wrong = q.type !== 'short' && values[i] !== q.answer;
     if (q.type !== 'short') { objective++; if (values[i] === q.answer) correct++; }
-    answer.parentElement.dataset.wrong = String(q.type !== 'short' && values[i] !== q.answer);
-    answer.append(node('strong', q.type === 'short' ? '简答题 · 对照原文自行评估' : values[i] === q.answer ? '✓ 回答正确' : '↗ 再看一眼这个知识点'), mathNode('p', `参考答案：${q.answer}`), mathNode('p', q.explanation));
+    answer.parentElement.dataset.wrong = String(wrong);
+    answer.append(node('strong', q.type === 'short' ? '简答题 · 对照原文自行评估' : wrong ? '✕ 回答错误 · 请核对正确答案' : '✓ 回答正确', `answer-status ${q.type === 'short' ? 'self-review' : wrong ? 'is-wrong' : 'is-correct'}`));
+    if (wrong) {
+      const label = q.type === 'tf' ? values[i] === 'True' ? '正确（True）' : '错误（False）' : values[i];
+      answer.append(mathNode('p', `你的答案：${label || '未作答'}`, 'your-wrong-answer'));
+    }
+    answer.append(mathNode('p', `参考答案：${q.answer}`, wrong ? 'correct-answer' : ''), mathNode('p', q.explanation));
     const details = node('details'); details.open = entry.expandedSources.includes(i);
-    details.append(node('summary', `查看原文依据 · ${q.source_name || groupDocs(findGroup(entry.groupId))[0]?.name || '示例'} · 第 ${q.page} 页`), node('blockquote', q.quote, 'raw-source'), node('p', '请对照原文检查答案。引用匹配不能保证题目和答案完全正确。', 'hint'));
+    const documents = groupDocs(findGroup(entry.groupId));
+    const source = documents.find(doc => doc.id === q.source_document_id) ||
+      (documents.filter(doc => doc.name === q.source_name).length === 1 ? documents.find(doc => doc.name === q.source_name) : null) ||
+      (documents.length === 1 ? documents[0] : null);
+    const evidence = LectureSources.create(source, q.page, q.quote);
+    details.append(node('summary', `查看原文依据 · ${q.source_name || source?.name || '示例'} · 第 ${q.page} 页`), evidence.element, node('p', '请对照原文检查答案。引用匹配不能保证题目和答案完全正确。', 'hint'));
+    if (details.open) evidence.load();
     details.addEventListener('toggle', () => {
+      if (details.open) evidence.load();
       entry.expandedSources = entry.expandedSources.filter(index => index !== i);
       if (details.open) entry.expandedSources.push(i);
       persist();

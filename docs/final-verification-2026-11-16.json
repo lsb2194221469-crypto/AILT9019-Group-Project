@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-16",
+  "backend": {
+    "command": "python -m unittest discover -s tests",
+    "tests": 53,
+    "passed": true,
+    "elapsed_seconds": 5.842,
+    "real_provider": false
+  },
+  "browser": [
+    "source previews and legacy quotes",
+    "multiple PDFs with shared page numbers",
+    "refresh and 390px layout",
+    "offline preview recovery",
+    "explicit wrong-answer feedback",
+    "study flow and history regression",
+    "minimal controls/Markdown export regression"
+  ],
+  "node_math_format": true,
+  "real_model_evaluation": "final-evaluation-2026-11-16.json",
+  "independent_human_review": false,
+  "test_environment_note": "One initial local HTTP test connection aborted with Windows error 10053; targeted background suite and a subsequent full 53-test run passed."
+}

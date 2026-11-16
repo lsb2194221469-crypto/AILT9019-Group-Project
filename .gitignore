@@ -2,6 +2,7 @@
 config.json
 .generation-jobs/
 .example-runs/
+.evaluation-runs/
 .public-session.json
 .public-session.tmp
 .public-publish.json

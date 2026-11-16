@@ -8,6 +8,23 @@ from unittest.mock import patch, MagicMock
 import server
 
 class ApiTests(unittest.TestCase):
+    def test_listening_proxy_that_refuses_https_is_bypassed_before_api_request(self):
+        connection = MagicMock()
+        connection.__enter__.return_value.recv.return_value = b'HTTP/1.1 403 Forbidden\r\n'
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://127.0.0.1:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection', return_value=connection), patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            self.assertEqual(build.call_args.args[0].proxies, {})
+            sent = connection.__enter__.return_value.sendall.call_args.args[0]
+            self.assertIn(b'CONNECT api.deepseek.com:443', sent)
+            self.assertNotIn(b'Authorization', sent)
+
+    def test_proxy_that_allows_https_remains_configured(self):
+        connection = MagicMock()
+        connection.__enter__.return_value.recv.return_value = b'HTTP/1.1 200 Connection established\r\n'
+        with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://127.0.0.1:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection', return_value=connection), patch.object(server.urllib.request, 'build_opener') as build:
+            server.model_opener('https://api.deepseek.com')
+            self.assertEqual(len(build.call_args.args), 1)
+
     def test_refused_local_proxy_uses_direct_connection_before_api_request(self):
         with patch.object(server.urllib.request, 'getproxies', return_value={'https':'http://127.0.0.1:7897'}), patch.object(server.urllib.request, 'proxy_bypass', return_value=False), patch.object(server.socket, 'create_connection', side_effect=ConnectionRefusedError), patch.object(server.urllib.request, 'build_opener') as build:
             server.model_opener('https://api.deepseek.com')

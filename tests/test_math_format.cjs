@@ -1,0 +1,13 @@
+const assert = require('assert'), fs = require('fs'), path = require('path'), vm = require('vm');
+const sandbox = {window:{}};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../static/format.js'),'utf8'), sandbox);
+const prepare = sandbox.window.LectureMath.prepare;
+assert.equal(prepare(String.raw`\(Pr(X\le x)\)`), String.raw`\(\Pr(X\le x)\)`);
+assert.equal(prepare(String.raw`\(\mathrm{P r}(A)+\operatorname{V a r}(X)\)`), String.raw`\(\Pr(A)+\operatorname{Var}(X)\)`);
+assert.equal(prepare(String.raw`\[\text{C o v}(X,Y)+\mathrm{s i n}(x)\]`), String.raw`\[\operatorname{Cov}(X,Y)+\sin(x)\]`);
+assert.equal(prepare(String.raw`\(\Pr(A)+P r(x)+R\)`), String.raw`\(\Pr(A)+P r(x)+R\)`);
+assert.equal(prepare(String.raw`\(\mathrm{sin}x+\mathrm{Pr}A\)`), String.raw`\(\sin x+\Pr A\)`);
+assert.equal(prepare('P r is literal source text; R is a variable; ordinary x2.'), 'P r is literal source text; R is a variable; ordinary x2.');
+assert.equal(prepare('The variable x^2 and x_i.'), String.raw`The variable \(x^{2}\) and \(x_{i}\).`);
+assert.equal(prepare(String.raw`\(\int_{-\infty}^{\infty}g(x)f(x)\,\mathrm{d}x\)`), String.raw`\(\int_{-\infty}^{\infty}g(x)f(x)\,\mathrm{d}x\)`);
+console.log('PASS: named operators, split explicit names, integrals and bounds, preserved variables, prose and raw digits.');

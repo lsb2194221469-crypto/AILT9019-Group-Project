@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "realProvider": false,
+  "checks": [
+    "original integral and limits",
+    "probability typography",
+    "two PDFs with same page number",
+    "verbatim legacy quote unchanged",
+    "collapsed lossy text",
+    "original-page link",
+    "named operator KaTeX",
+    "reload recovery",
+    "390px no overflow",
+    "offline failure and retry",
+    "missing PDF fallback",
+    "no external requests"
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "date": "2026-11-16",
+  "course": "SDST2601 Probability and Statistics 1",
+  "scope": "Single exploratory run per setting; three lecture excerpts and one combined batch per prompt. Not a held-out or statistically powered study.",
+  "data_permission": "User-authorized local course-material evaluation. Original course PDFs and derived input excerpts are not published; redistribution permission unverified.",
+  "independent_human_review": false,
+  "variants": {
+    "baseline": {
+      "cases": [
+        {
+          "case": "discrete",
+          "requested": 6,
+          "accepted": 6,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 17.665,
+          "provider_calls": 1
+        },
+        {
+          "case": "continuous",
+          "requested": 6,
+          "accepted": 5,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 1,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 16.889,
+          "provider_calls": 1
+        },
+        {
+          "case": "properties",
+          "requested": 6,
+          "accepted": 6,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 21.66,
+          "provider_calls": 1
+        },
+        {
+          "case": "multi_pdf",
+          "requested": 3,
+          "accepted": 3,
+          "requested_counts": {
+            "mcq": 1,
+            "tf": 1,
+            "short": 1
+          },
+          "actual_counts": {
+            "mcq": 1,
+            "tf": 1,
+            "short": 1
+          },
+          "elapsed_seconds": 17.323,
+          "provider_calls": 2
+        }
+      ],
+      "requested": 21,
+      "accepted": 20,
+      "exact_count_batches": 3,
+      "total_batches": 4,
+      "median_seconds": 17.494,
+      "provider_calls": 5,
+      "usage": {
+        "prompt_tokens": 32674,
+        "completion_tokens": 15250,
+        "total_tokens": 47924,
+        "prompt_cache_hit_tokens": 2304,
+        "prompt_cache_miss_tokens": 30370
+      }
+    },
+    "improved": {
+      "cases": [
+        {
+          "case": "discrete",
+          "requested": 6,
+          "accepted": 6,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 37.593,
+          "provider_calls": 2
+        },
+        {
+          "case": "continuous",
+          "requested": 6,
+          "accepted": 6,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 19.404,
+          "provider_calls": 1
+        },
+        {
+          "case": "properties",
+          "requested": 6,
+          "accepted": 6,
+          "requested_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "actual_counts": {
+            "mcq": 2,
+            "tf": 2,
+            "short": 2
+          },
+          "elapsed_seconds": 32.12,
+          "provider_calls": 1
+        },
+        {
+          "case": "multi_pdf",
+          "requested": 3,
+          "accepted": 3,
+          "requested_counts": {
+            "mcq": 1,
+            "tf": 1,
+            "short": 1
+          },
+          "actual_counts": {
+            "mcq": 1,
+            "tf": 1,
+            "short": 1
+          },
+          "elapsed_seconds": 18.441,
+          "provider_calls": 1
+        }
+      ],
+      "requested": 21,
+      "accepted": 21,
+      "exact_count_batches": 4,
+      "total_batches": 4,
+      "median_seconds": 25.762,
+      "provider_calls": 5,
+      "usage": {
+        "prompt_tokens": 27225,
+        "completion_tokens": 22383,
+        "total_tokens": 49608,
+        "prompt_cache_hit_tokens": 3072,
+        "prompt_cache_miss_tokens": 24153
+      }
+    }
+  },
+  "boundary_cases": [
+    {
+      "case": "not_a_pdf",
+      "expected": "reject invalid file",
+      "observed": "Please select a valid PDF file.",
+      "passed": true
+    },
+    {
+      "case": "blank_pdf",
+      "expected": "reject unreadable/empty document",
+      "observed": "Not enough readable source material. Scanned PDFs need OCR first.",
+      "passed": true
+    },
+    {
+      "case": "scanned_image_only",
+      "expected": "reject with OCR guidance",
+      "observed": "Not enough readable source material. Scanned PDFs need OCR first.",
+      "passed": true
+    },
+    {
+      "case": "password_protected",
+      "expected": "reject locked document",
+      "observed": "Password-protected PDFs are not supported. Upload an unlocked copy.",
+      "passed": true
+    },
+    {
+      "case": "over_200_pages",
+      "expected": "reject over page limit",
+      "observed": "Please use a PDF with 200 pages or fewer.",
+      "passed": true
+    }
+  ],
+  "provisional_ai_audit": {
+    "baseline_incomplete_quotes": [
+      "discrete-Q1",
+      "discrete-Q5",
+      "discrete-Q6"
+    ],
+    "improved_ambiguous_distractor": [
+      "discrete-Q1: finite is also sufficient for a discrete support; revise distractor to always finite."
+    ],
+    "caveat": "AI-assisted source/mathematical inspection; not independently validated student ratings or an accuracy percentage."
+  }
+}

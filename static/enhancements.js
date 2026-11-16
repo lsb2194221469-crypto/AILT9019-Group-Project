@@ -49,11 +49,11 @@
   $('print-btn').onclick = () => { if (quiz) window.print(); };
   $('markdown-btn').onclick = () => {
     if (!activeEntry || !quiz) return;
-    const lines = ['# ' + activeEntry.title, '', '> 自学练习；请对照 PDF 原文核对答案。', ''];
+    const lines = ['# ' + activeEntry.title, '', '> 自学练习；请对照 PDF 原文核对答案。出处中的提取文本不保留 PDF 公式排版，请以原页为准。', ''];
     quiz.questions.forEach((q, index) => {
-      lines.push(`## ${index + 1}. ${q.question}`, '');
-      (q.options || []).forEach((option, i) => lines.push(`${String.fromCharCode(65+i)}. ${option}`));
-      lines.push('', `**答案：** ${q.answer}`, '', q.explanation, '', `**出处：** ${q.source_name || '讲义'} · 第 ${q.page} 页`, '', q.quote.split('\n').map(line => '> ' + line).join('\n'), '');
+      lines.push(`## ${index + 1}. ${LectureMath.prepare(q.question)}`, '');
+      (q.options || []).forEach((option, i) => lines.push(`${String.fromCharCode(65+i)}. ${LectureMath.prepare(option)}`));
+      lines.push('', `**答案：** ${LectureMath.prepare(q.answer)}`, '', LectureMath.prepare(q.explanation), '', `**出处：** ${q.source_name || '讲义'} · 第 ${q.page} 页`, '', q.quote.split('\n').map(line => '> ' + line).join('\n'), '');
     });
     const url = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/markdown;charset=utf-8'}));
     const a = node('a'); a.href = url; a.download = 'lecture-quiz.md'; a.click();

@@ -13,6 +13,10 @@ source=source.replace('assert.deepEqual(errors,[]);', `
   assert.equal(await page.locator('#questions>article:visible').count(),3);
   await page.locator('input[name=q1]').last().check();await page.fill('#response-2','自己的解释');
   await page.click('#submit-btn');assert(await page.locator('#next-unanswered').isHidden());
+  assert.equal(await page.locator('.answer-status.is-wrong').count(),1);
+  assert.equal(await page.locator('.your-wrong-answer').count(),1);
+  assert.equal(await page.locator('.question-jump.is-wrong').count(),1);
+  assert((await page.locator('.answer-status.is-wrong').textContent()).includes('回答错误'));
   await page.click('#wrong-btn');assert.equal(await page.locator('#questions>article:visible').count(),1);
   await page.click('#starred-btn');assert.equal(await page.locator('#questions>article:visible').count(),1);
   assert(await page.locator('#questions>article').nth(2).isVisible());
