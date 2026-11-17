@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "date": "2026-11-17",
+  "checks": [
+    "English content, unique title, internal anchors, local assets",
+    "Layout and navigation at 1440px, including open results table",
+    "Layout and navigation at 1024px, including open results table",
+    "Layout and navigation at 768px, including open results table",
+    "Layout and navigation at 390px, including open results table",
+    "Layout and navigation at 320px, including open results table",
+    "Screenshot viewer, full-size image, Escape/close and returned keyboard focus",
+    "Keyboard-operated FAQ",
+    "Real MP4 playback, 192-second duration, loaded English captions",
+    "Reduced-motion preference respected",
+    "WCAG AA text contrast (computed solid backgrounds)",
+    "Core content and screenshot links work without JavaScript"
+  ],
+  "errors": [],
+  "failed": [],
+  "live_provider_calls": 0
+}

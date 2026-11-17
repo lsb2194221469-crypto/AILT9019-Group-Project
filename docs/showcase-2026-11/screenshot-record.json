@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-17",
+  "interface": "Current English UI",
+  "input": "examples/math-notes.pdf",
+  "question_source": "Replay of examples/expected-output.json (25 October 2026)",
+  "provider": "Simulated replay; no new API call",
+  "checks": [
+    "Upload and mixed counts",
+    "Answer review and original PDF evidence",
+    "Two independent sets in one PDF group"
+  ],
+  "errors": []
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <rect width="1200" height="750" fill="#203e36"/>
+  <g fill="none" stroke="#78917a" stroke-width="1" opacity=".5"><ellipse cx="1000" cy="130" rx="280" ry="180" transform="rotate(-28 1000 130)"/><ellipse cx="1000" cy="130" rx="320" ry="220" transform="rotate(-28 1000 130)"/></g>
+  <rect x="70" y="70" width="257" height="42" rx="21" fill="#e0ebd7"/>
+  <text x="93" y="98" fill="#203e36" font-family="Segoe UI,Arial,sans-serif" font-size="18" letter-spacing="2">WATCH A REAL RUN</text>
+  <text x="70" y="252" fill="#faf8f1" font-family="Georgia,serif" font-size="92">From notes</text>
+  <text x="70" y="359" fill="#f4b6a0" font-family="Georgia,serif" font-size="92" font-style="italic">to questions.</text>
+  <text x="74" y="425" fill="#d4dfd2" font-family="Segoe UI,Arial,sans-serif" font-size="23">A PDF. Three question types. Original source pages.</text>
+  <circle cx="1015" cy="330" r="71" fill="#f4b6a0"/>
+  <path d="m1000 298 43 32-43 32z" fill="#203e36"/>
+  <g font-family="Segoe UI,Arial,sans-serif" font-size="20" fill="#faf8f1"><rect x="74" y="505" width="246" height="70" rx="8" fill="#345246"/><text x="100" y="549">01 / PDF input</text><text x="348" y="550">→</text><rect x="396" y="505" width="278" height="70" rx="8" fill="#345246"/><text x="422" y="549">02 / DeepSeek API</text><text x="704" y="550">→</text><rect x="754" y="505" width="368" height="70" rx="8" fill="#345246"/><text x="780" y="549">03 / Quiz + source review</text></g>
+  <path d="M74 634h1048" stroke="#78917a"/>
+  <text x="74" y="681" fill="#d4dfd2" font-family="Segoe UI,Arial,sans-serif" font-size="18">16 NOV 2026 · EARLIER INTERFACE · ENGLISH NARRATION</text>
+  <text x="1065" y="681" fill="#faf8f1" font-family="Segoe UI,Arial,sans-serif" font-size="18">3:12</text>
+</svg>
