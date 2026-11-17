@@ -51,7 +51,7 @@ class FullReadTests(unittest.TestCase):
             self.assert_refused([{'page':1,'text':'Source material','image_url':'x'*2048}],'32 MB')
 
     def test_missing_page_image_refuses_instead_of_sending_partial_visual_input(self):
-        self.assert_refused([{'page':1,'text':'Source material','image_url':'image'}, {'page':2,'text':'More material'}],'缺少整页图像')
+        self.assert_refused([{'page':1,'text':'Source material','image_url':'image'}, {'page':2,'text':'More material'}],'page images are missing')
 
     def assert_refused(self,pages,message):
         with patch.object(server,'read_config',return_value={'model':'deepseek-flash'}),patch.object(server,'provider_request') as provider:

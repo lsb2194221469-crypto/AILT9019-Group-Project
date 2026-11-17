@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "provider": "simulated",
+  "checks": [
+    "English home",
+    "English sample",
+    "upload",
+    "mixed counts",
+    "generation",
+    "review",
+    "dialogs",
+    "mobile",
+    "upload error",
+    "no horizontal overflow",
+    "16px base font"
+  ],
+  "errors": []
+}

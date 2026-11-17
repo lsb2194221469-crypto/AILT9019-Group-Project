@@ -17,5 +17,5 @@
 .your-wrong-answer{color:#a42520;font-weight:600}
 .correct-answer{color:#2c603c;font-weight:600}
 .question-jump.is-wrong{color:#a42520;border-color:#ba3229;background:#fff0ec}
-@media(max-width:600px){.source-facsimile{padding:7px;overflow-x:auto}.source-facsimile figcaption{font-size:10px}.source-image{min-width:480px;max-width:none}.source-facsimile::after{content:'可横向滑动查看完整公式';display:block;font-size:10px;color:#69745a;margin-top:8px}}
+@media(max-width:600px){.source-facsimile{padding:7px;overflow-x:auto}.source-facsimile figcaption{font-size:10px}.source-image{min-width:480px;max-width:none}.source-facsimile::after{content:'Scroll sideways to see the full formula';display:block;font-size:10px;color:#69745a;margin-top:8px}}
 @media print{.source-extracted,.source-original,.source-retry{display:none!important}.source-facsimile{break-inside:avoid}.source-image{max-height:220mm;object-fit:contain}}

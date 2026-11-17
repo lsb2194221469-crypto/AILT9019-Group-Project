@@ -53,7 +53,7 @@ class MixedMathTests(unittest.TestCase):
             self.assertEqual(user['counts'], {'mcq':1,'tf':1,'short':1})
             self.assertIn('x^{2}', user['source_pages'][0]['math_context'])
             self.assertEqual(result['actual_counts'], {'mcq':1,'tf':0,'short':0})
-            self.assertIn('少于请求',result['notice'])
+            self.assertIn('fewer are shown',result['notice'])
             self.assertEqual(result['questions'][0]['quote'], self.pages[0]['text'])
 
     def test_pdf_position_recovers_scripts_but_does_not_guess_plain_digits(self):

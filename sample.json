@@ -1,9 +1,41 @@
 {
   "sample": true,
-  "notice": "预先编写的示例测验，仅用于体验界面。来源为本项目自编示例讲义，不使用你上传的 PDF。",
+  "notice": "Ready-made sample using notes written for this project. It does not use your uploaded PDF.",
   "questions": [
-    {"type":"mcq","question":"监督学习训练时使用哪一种数据？","options":["带有标签的数据","完全不含标签的数据","只有模型预测结果的数据","只有随机噪声"],"answer":"带有标签的数据","explanation":"监督学习从带有标签的训练数据中学习输入与目标之间的映射。","page":1,"quote":"Supervised learning learns a mapping from inputs to targets using labelled training data."},
-    {"type":"tf","question":"测试集应当参与模型参数的训练。","options":["True","False"],"answer":"False","explanation":"测试集用于评估在未见数据上的表现，不参与模型参数训练。","page":2,"quote":"The test set evaluates performance on unseen data and must not be used to train model parameters."},
-    {"type":"short","question":"什么是过拟合？它在训练表现与未见数据表现上有什么区别？","options":[],"answer":"模型学到了训练数据中的特定模式或噪声，在训练集上表现很好，但在未见数据上表现较差。","explanation":"关键是区分训练数据上的高表现与对新数据较差的泛化能力。","page":3,"quote":"Overfitting occurs when a model fits training data too closely, performing well on training examples but poorly on unseen data."}
+    {
+      "type": "mcq",
+      "question": "What kind of data is used to train a supervised learning model?",
+      "options": [
+        "Data with labels",
+        "Data without labels",
+        "Only model predictions",
+        "Only random noise"
+      ],
+      "answer": "Data with labels",
+      "explanation": "Supervised learning uses labelled examples to learn how inputs relate to targets.",
+      "page": 1,
+      "quote": "Supervised learning learns a mapping from inputs to targets using labelled training data."
+    },
+    {
+      "type": "tf",
+      "question": "The test set should be used to train model parameters.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "answer": "False",
+      "explanation": "The test set checks how the model performs on new data. It is not used to train the model.",
+      "page": 2,
+      "quote": "The test set evaluates performance on unseen data and must not be used to train model parameters."
+    },
+    {
+      "type": "short",
+      "question": "What is overfitting, and how does it affect performance on training data and new data?",
+      "options": [],
+      "answer": "The model fits the training examples too closely. It does well on training data but poorly on new data.",
+      "explanation": "Good results on training data alone do not mean the model will do well on new data.",
+      "page": 3,
+      "quote": "Overfitting occurs when a model fits training data too closely, performing well on training examples but poorly on unseen data."
+    }
   ]
 }

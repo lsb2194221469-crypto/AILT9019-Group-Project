@@ -46,7 +46,7 @@ class GenerationJobs:
                     file.unlink()
                     continue
                 if job['status'] in ('queued', 'running'):
-                    job.update(status='failed', error='主机服务已重启，未完成的任务已中止。请手动重新生成；不会自动重复调用模型。', updated_at=time.time())
+                    job.update(status='failed', error='The host restarted before your quiz was ready. Please start again. No extra model request was made.', updated_at=time.time())
                     self._save(job)
                 self.jobs[job['id']] = job
             except (OSError, ValueError, KeyError, TypeError):
@@ -64,7 +64,7 @@ class GenerationJobs:
                 self.jobs.pop(job_id)
                 job = None
             if job and fingerprint is not None and job['fingerprint'] != fingerprint:
-                raise ValueError('任务编号已用于不同的出题请求。请重新创建练习。')
+                raise ValueError('This task ID belongs to a different quiz. Please start a new quiz.')
             return self._public(job) if job else None
 
     def submit(self, job_id, fingerprint, generate):
@@ -72,7 +72,7 @@ class GenerationJobs:
             self._load()
             if job_id in self.jobs:
                 if self.jobs[job_id]['fingerprint'] != fingerprint:
-                    raise ValueError('任务编号已用于不同的出题请求。')
+                    raise ValueError('This task ID belongs to a different quiz.')
                 return self._public(self.jobs[job_id])
             # Never evict an active task. Completed results remain bounded and
             # expire after 24 hours; no documents or API credentials are journaled.
@@ -83,7 +83,7 @@ class GenerationJobs:
                 (self.directory / (old['id'] + '.json')).unlink(missing_ok=True)
                 self.jobs.pop(old['id'])
             if len(self.jobs) >= self.capacity or sum(job['status'] in ('queued', 'running') for job in self.jobs.values()) >= 16:
-                raise ValueError('后台任务较多，请等待已有任务完成后重试。')
+                raise ValueError('Too many quizzes are being made right now. Wait for one to finish and try again.')
             now = time.time()
             job = {'id': job_id, 'fingerprint': fingerprint, 'status': 'queued', 'created_at': now, 'updated_at': now}
             self._save(job)
@@ -103,7 +103,7 @@ class GenerationJobs:
             except ValueError as error:
                 update = {'status': 'failed', 'error': str(error)}
             except Exception:
-                update = {'status': 'failed', 'error': '处理失败，请检查 PDF、网络及 API 配置。未使用示例题替代本次生成。'}
+                update = {'status': 'failed', 'error': 'Something went wrong. Check your PDF, network, and API settings. No sample questions were used in place of your quiz.'}
             with self.lock:
                 job.update(**update, updated_at=time.time())
                 try:

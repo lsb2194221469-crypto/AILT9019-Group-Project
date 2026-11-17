@@ -40,16 +40,16 @@
   function create(doc, page, quote = '') {
     const root = make('div', undefined, 'source-evidence');
     const raw = make('details', undefined, 'source-extracted');
-    raw.append(make('summary', '提取文本（不保留原页排版）'), make('blockquote', quote, 'raw-source'));
+    raw.append(make('summary', 'Plain text from the PDF'), make('blockquote', quote, 'raw-source'));
     if (!doc?.file || !Number.isInteger(page) || page < 1) {
-      root.append(make('p', '原 PDF 不在此浏览器中，暂时只能显示提取文本；公式请对照原文件。', 'hint'), raw);
+      root.append(make('p', 'This PDF is not saved in this browser. Only plain text is available. Check formulas in the original file.', 'hint'), raw);
       raw.open = true;
       return {element:root, load:() => {}};
     }
     const figure = make('figure', undefined, 'source-facsimile');
-    const caption = make('figcaption', `PDF 原页排版 · 第 ${page} 页`);
-    const status = make('p', '正在读取 PDF 原页排版…', 'hint'); status.setAttribute('role','status');
-    const original = make('a', '打开 PDF 原页 ↗', 'text-button source-original');
+    const caption = make('figcaption', `Original PDF · Page ${page}`);
+    const status = make('p', 'Loading the PDF page…', 'hint'); status.setAttribute('role','status');
+    const original = make('a', 'Open PDF page ↗', 'text-button source-original');
     if (!doc.url) doc.url = URL.createObjectURL(doc.file);
     original.href = doc.url + '#page=' + page; original.target = '_blank'; original.rel = 'noopener';
     figure.append(caption, status); root.append(figure, original);
@@ -57,22 +57,22 @@
     let loading = false, done = false;
     async function load() {
       if (loading || done) return;
-      loading = true; status.textContent = '正在读取 PDF 原页排版…';
+      loading = true; status.textContent = 'Loading the PDF page…';
       figure.querySelector('.source-retry')?.remove();
       try {
         const result = await preview(doc, page, quote);
         const image = make('img', undefined, 'source-image');
-        image.alt = `${doc.name} 第 ${page} 页${result.mode === 'excerpt' ? '原文片段' : '原页'}（保留 PDF 数学符号与排版）`;
+        image.alt = `${doc.name}, page ${page}, ${result.mode === 'excerpt' ? 'source excerpt' : 'full page'} with original math and layout`;
         image.width = result.width; image.height = result.height;
         const url = URL.createObjectURL(result.blob);
         try {
           await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; image.src = url; });
         } finally { URL.revokeObjectURL(url); }
-        caption.textContent = `PDF ${result.mode === 'excerpt' ? '原文片段' : '原页'} · 第 ${page} 页`;
+        caption.textContent = `PDF ${result.mode === 'excerpt' ? 'source excerpt' : 'page'} · Page ${page}`;
         figure.append(image); status.remove(); done = true;
       } catch (_) {
-        status.textContent = '原页预览暂时不可用，请打开 PDF 原页查看公式。';
-        const retry = make('button', '重试预览', 'text-button source-retry'); retry.type = 'button';
+        status.textContent = 'The preview is not available. Open the PDF page to check formulas.';
+        const retry = make('button', 'Try preview again', 'text-button source-retry'); retry.type = 'button';
         retry.onclick = load; figure.append(retry);
       } finally { loading = false; }
     }

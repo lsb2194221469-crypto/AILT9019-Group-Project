@@ -78,22 +78,22 @@ def citation_clip(page, quote):
 def render_source(data, page_number, quote=''):
     import pymupdf
     if not data.startswith(b'%PDF-'):
-        raise ValueError('请选择有效的 PDF 原文件。')
+        raise ValueError('Choose a valid PDF file.')
     if type(page_number) is not int or page_number < 1:
-        raise ValueError('原文页码无效。')
+        raise ValueError('That PDF page number is not valid.')
     if not isinstance(quote, str) or len(quote) > 4000:
-        raise ValueError('原文片段过长。')
+        raise ValueError('The source passage is too long.')
     try:
         document = pymupdf.open(stream=data, filetype='pdf')
     except Exception:
-        raise ValueError('无法读取 PDF 原文件。') from None
+        raise ValueError('Could not read the original PDF.') from None
     with document:
         if document.needs_pass or len(document) > 200 or page_number > len(document):
-            raise ValueError('无法打开此 PDF 页，请检查页码、页数或文件密码。')
+            raise ValueError('Could not open this PDF page. Check the page number or whether the file needs a password.')
         page = document[page_number - 1]
         clip, mode = citation_clip(page, quote)
         if clip.is_empty or not all(math.isfinite(value) for value in clip) or clip.width < 1 or clip.height < 1:
-            raise ValueError('PDF 页面尺寸无效。')
+            raise ValueError('The PDF page size is not valid.')
         # Bound CPU/memory for very large or unusual page sizes.
         scale = min(2.0, 1200 / clip.width, 2200 / clip.height,
                     math.sqrt(2_500_000 / (clip.width * clip.height)))

@@ -7,7 +7,7 @@
       request.onupgradeneeded = () => request.result.createObjectStore('workspace');
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
-      request.onblocked = () => reject(new Error('请关闭其他 Lecture Lab 页面后重试。'));
+      request.onblocked = () => reject(new Error('Close other Lecture Lab tabs and try again.'));
     });
     return database;
   }

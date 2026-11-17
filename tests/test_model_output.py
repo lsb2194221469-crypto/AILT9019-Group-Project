@@ -30,7 +30,7 @@ class OutputTests(unittest.TestCase):
             result = server.generate(self.pages, 'test', 'tf', 2, '')
             self.assertEqual(len(result['questions']), 1)
             self.assertEqual(result['questions'][0]['quote'], self.pages[0]['text'])
-            self.assertIn('长度限制', result['notice'])
+            self.assertIn('response limit', result['notice'])
             self.assertEqual(provider.call_count, 1)
 
     def test_truncated_fabricated_quote_still_fails_validation(self):

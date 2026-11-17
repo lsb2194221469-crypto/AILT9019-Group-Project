@@ -1,14 +1,14 @@
 /* Additive controls; keep the existing IndexedDB schema and quiz IDs intact. */
 (() => {
   $('nav-library').onclick = () => $('library-section').scrollIntoView({behavior:'smooth',block:'start'});
-  const dock = () => { $('generation-dock').hidden = workspace.view === 'quiz'; $('dock-summary').textContent = documentData ? `${groupDocs(findGroup(workspace.activeGroupId)).length} 份讲义 · ${Object.values(counts()).reduce((a,b)=>a+b,0)} 道题，准备好了。` : '选好讲义，再开始。'; };
+  const dock = () => { $('generation-dock').hidden = workspace.view === 'quiz'; $('dock-summary').textContent = documentData ? `${countLabel(groupDocs(findGroup(workspace.activeGroupId)).length, 'PDF')} · ${Object.values(counts()).reduce((a,b)=>a+b,0)} questions ready to create` : 'Add your notes to get started.'; };
   new MutationObserver(dock).observe($('create-view'), {attributes:true,attributeFilter:['hidden']});
   new MutationObserver(dock).observe($('generate-btn'), {attributes:true,attributeFilter:['disabled']});
   dock();
   $('library-search').addEventListener('input', renderLibrary);
   const presets = node('div', undefined, 'preset-row');
-  presets.setAttribute('aria-label', '题量快捷设置');
-  for (const [label, values] of [['快速复习', [2, 2, 1]], ['均衡练习', [4, 4, 2]], ['深入理解', [2, 2, 6]]]) {
+  presets.setAttribute('aria-label', 'Quick question counts');
+  for (const [label, values] of [['Quick review', [2, 2, 1]], ['Mixed practice', [4, 4, 2]], ['More short answers', [2, 2, 6]]]) {
     const button = node('button', label, 'secondary'); button.type = 'button';
     button.onclick = () => {
       if (busy || booting) return;
@@ -39,25 +39,25 @@
   $('rename-form').onsubmit = async event => {
     event.preventDefault();
     const name = $('quiz-name').value.trim(), entry = workspace.quizzes.find(q => q.id === renamingId);
-    if (!name) { $('quiz-name').setCustomValidity('请输入测验名称。'); $('quiz-name').reportValidity(); return; }
+    if (!name) { $('quiz-name').setCustomValidity('Enter a quiz name.'); $('quiz-name').reportValidity(); return; }
     if (!entry || busy) return;
     entry.title = name.slice(0,80); openQuiz(entry); await persist();
-    $('rename-dialog').close(); message(storageNotice ? '名称已修改，但浏览器保存失败，请导出备份。' : '测验名称已保存。', storageNotice);
+    $('rename-dialog').close(); message(storageNotice ? 'Name changed, but this browser could not save it. Export a copy.' : 'Quiz name saved.', storageNotice);
   };
   $('quiz-name').oninput = () => $('quiz-name').setCustomValidity('');
   $('rename-dialog').addEventListener('close', () => { renamingId = null; $('rename-btn').focus(); });
   $('print-btn').onclick = () => { if (quiz) window.print(); };
   $('markdown-btn').onclick = () => {
     if (!activeEntry || !quiz) return;
-    const lines = ['# ' + activeEntry.title, '', '> 自学练习；请对照 PDF 原文核对答案。出处中的提取文本不保留 PDF 公式排版，请以原页为准。', ''];
+    const lines = ['# ' + activeEntry.title, '', '> Study practice. Check answers against the PDF. Plain text may lose math symbols, so check the original page.', ''];
     quiz.questions.forEach((q, index) => {
       lines.push(`## ${index + 1}. ${LectureMath.prepare(q.question)}`, '');
       (q.options || []).forEach((option, i) => lines.push(`${String.fromCharCode(65+i)}. ${LectureMath.prepare(option)}`));
-      lines.push('', `**答案：** ${LectureMath.prepare(q.answer)}`, '', LectureMath.prepare(q.explanation), '', `**出处：** ${q.source_name || '讲义'} · 第 ${q.page} 页`, '', q.quote.split('\n').map(line => '> ' + line).join('\n'), '');
+      lines.push('', `**Answer:** ${LectureMath.prepare(q.answer)}`, '', LectureMath.prepare(q.explanation), '', `**Source:** ${q.source_name || 'Notes'} · Page ${q.page}`, '', q.quote.split('\n').map(line => '> ' + line).join('\n'), '');
     });
     const url = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/markdown;charset=utf-8'}));
     const a = node('a'); a.href = url; a.download = 'lecture-quiz.md'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    message('Markdown 已导出，包含题目、答案、解析与原文出处。');
+    message('Markdown exported with questions, answers, explanations, and sources.');
   };
 })();

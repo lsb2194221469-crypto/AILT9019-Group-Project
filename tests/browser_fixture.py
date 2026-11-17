@@ -28,13 +28,13 @@ def provider(path,payload,config):
         for index in range(count):
             source = request['source_pages'][len(questions) % len(request['source_pages'])]
             common = {'type':kind,'page':source['page'],'quote':source['text'],
-                      'explanation':r'由 \(x^{2}=x\times x\)，代入 \(x=2\) 得 \(4\)。单位用 \(\mathrm{m}^{2}\)，函数用 \(\sin x\)。'}
+                      'explanation':r'Using \(x^{2}=x\times x\), with \(x=2\), gives \(4\). Units use \(\mathrm{m}^{2}\), and functions use \(\sin x\).'}
             if kind == 'mcq':
-                common.update(question=rf'第 {index+1} 题：若 \(x=2\)，\(x^{{2}}\) 等于多少？',answer=r'\(4\)',options=[r'\(4\)',r'\(2\)',r'\(\frac{1}{2}\)',r'\(\sqrt{2}\)'])
+                common.update(question=rf'Question {index+1}: if \(x=2\), \(x^{{2}}\) equals what?',answer=r'\(4\)',options=[r'\(4\)',r'\(2\)',r'\(\frac{1}{2}\)',r'\(\sqrt{2}\)'])
             elif kind == 'tf':
-                common.update(question=r'判断：\(x=2\) 时，\(x^{2}=4\)。',answer='True',options=['True','False'])
+                common.update(question=r'True or false: \(x=2\) when, \(x^{2}=4\).',answer='True',options=['True','False'])
             else:
-                common.update(question=r'写出导数并解释：\[\frac{d}{dx}x^{2}=2x\] 同时说明 x^2 和 x_i 的意义。<img src=x onerror="window.pwned=1">',answer=r'\(2x\)',options=[])
+                common.update(question=r'Find the derivative and explain: \[\frac{d}{dx}x^{2}=2x\] Also explain what x^2 and x_i mean.<img src=x onerror="window.pwned=1">',answer=r'\(2x\)',options=[])
             questions.append(common)
     return {'choices':[{'message':{'content':json.dumps({'questions':questions})}}]}
 

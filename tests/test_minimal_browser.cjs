@@ -18,13 +18,13 @@ source = source.replace('assert.deepEqual(errors,[]);', `
   await page.fill('#library-search','');
   const downloadWait = page.waitForEvent('download'); await page.click('#markdown-btn');
   const download = await downloadWait; const exported = fs.readFileSync(await download.path(),'utf8');
-  assert(exported.includes('期末复习 · 微积分')); assert(exported.includes('**答案：**')); assert(exported.includes('**出处：**'));
+  assert(exported.includes('期末复习 · 微积分')); assert(exported.includes('**Answer:**')); assert(exported.includes('**Source:**'));
   await page.emulateMedia({media:'print'});
   assert.equal(await page.locator('.sidebar').evaluate(el=>getComputedStyle(el).display),'none');
   await page.emulateMedia({media:'screen'});
-  await page.click('#regenerate-btn'); await page.getByRole('button',{name:'快速复习',exact:true}).click();
+  await page.click('#regenerate-btn'); await page.getByRole('button',{name:'Quick review',exact:true}).click();
   assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:1});
-  await page.getByRole('button',{name:'深入理解',exact:true}).click();
+  await page.getByRole('button',{name:'More short answers',exact:true}).click();
   assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:6});
   await saved(page); await reload(page); assert.deepEqual(await page.evaluate(()=>counts()),{mcq:2,tf:2,short:6});
   await page.setViewportSize({width:390,height:844});
