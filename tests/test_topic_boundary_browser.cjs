@@ -1,0 +1,53 @@
+// UI/integration checks with a scripted local provider, never live semantic evaluation.
+const {chromium}=require(process.env.LECTURE_LAB_PLAYWRIGHT||'playwright');
+const {spawn,spawnSync}=require('child_process'),fs=require('fs'),path=require('path'),assert=require('assert');
+const root=path.resolve(__dirname,'..'),out=process.env.LECTURE_LAB_QA_DIR||path.join(root,'.topic-boundary-checks');
+fs.mkdirSync(out,{recursive:true});
+const python=process.env.LECTURE_LAB_PYTHON||path.join(root,'runtime/python.exe'),pdf=path.join(out,'math-notes.pdf');
+assert.equal(spawnSync(python,['-c',"import fitz,sys;d=fitz.open();p=d.new_page();p.insert_text((60,60),'Add matrices of the same shape by adding corresponding entries.');p.insert_text((60,90),'For a squared entry, use x2.');p.insert_text((60,120),'x',fontsize=12);p.insert_text((67,114),'2',fontsize=8);d.save(sys.argv[1])",pdf],{windowsHide:true}).status,0);
+(async()=>{
+ const server=spawn(python,['tests/browser_fixture.py'],{cwd:root,windowsHide:true});let browser;
+ try{
+  await new Promise((ok,no)=>{server.stdout.once('data',ok);server.once('error',no);setTimeout(()=>no(Error('Fixture startup timeout')),10000).unref()});
+  browser=await chromium.launch({executablePath:process.env.LECTURE_LAB_CHROME||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-proxy-server']});
+  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const url='http://127.0.0.1:8766',metrics=async()=>await (await page.request.get(url+'/api/test/metrics')).json();
+  const configure=async body=>await page.request.post(url+'/api/test/provider',{data:body});
+  const ready=async()=>await page.waitForFunction(()=>!booting&&!busy);
+  const run=async topic=>{await page.fill('#topic',topic);await page.click('#generate-btn');await page.waitForFunction(()=>!busy,{},{timeout:20000})};
+  await page.goto(url);await ready();await page.setInputFiles('#pdf-input',pdf);await page.waitForFunction(()=>!busy&&documentData);
+  for(const k of ['mcq','tf','short'])await page.locator('#count-'+k).evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))},k==='tf'?1:0);
+  await run('matrix addition');assert.equal(await page.evaluate(()=>workspace.quizzes.length),1);
+  await page.click('#regenerate-btn');const before=await metrics();
+  await configure({delay_ms:300});await page.fill('#topic',"Bayes' theorem");await page.click('#generate-btn');
+  await page.waitForFunction(()=>workspace.tasks.some(t=>t.status==='pending'&&t.submitted));
+  await page.reload();await ready();
+  await page.locator('#message.topic-alert strong').waitFor();
+  assert.equal(await page.locator('#message strong').innerText(),'Topic not covered');
+  assert.equal(await page.locator('#message').getAttribute('role'),'alert');
+  assert.equal(await page.evaluate(()=>workspace.quizzes.length),1);
+  assert.equal(await page.evaluate(()=>workspace.documents.length),1);
+  assert.equal(await page.locator('#topic').inputValue(),"Bayes' theorem");
+  assert(await page.locator('#generate-btn').isEnabled());
+  const after=await metrics();assert.equal(after.topic_calls-before.topic_calls,1);assert.equal(after.question_calls,before.question_calls);
+  await page.screenshot({path:path.join(out,'topic-refusal-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert(!/[\u3400-\u9fff]/u.test(await page.locator('body').innerText()));
+  await page.screenshot({path:path.join(out,'topic-refusal-mobile.png'),fullPage:true});
+  await configure({topic_mode:'uncertain'});await run('matrix addition');
+  assert.equal(await page.locator('#message strong').innerText(),'Topic check could not finish');
+  assert.equal(await page.evaluate(()=>workspace.quizzes.length),1);
+  await configure({topic_mode:'malformed'});await run('matrix addition');
+  assert.equal(await page.locator('#message strong').innerText(),'Topic check could not finish');
+  await configure({});await run('adding two tables of numbers entry by entry');
+  assert.equal(await page.evaluate(()=>workspace.quizzes.length),2);
+  await page.click('#regenerate-btn');const preBlank=await metrics();await run('   ');
+  const postBlank=await metrics();assert.equal(postBlank.topic_calls,preBlank.topic_calls);assert.equal(postBlank.question_calls,preBlank.question_calls+1);
+  assert.equal(await page.evaluate(()=>workspace.quizzes.length),3);
+  await page.reload();await ready();assert.equal(await page.evaluate(()=>workspace.quizzes.length),3);
+  assert.deepEqual(errors,[]);
+  fs.writeFileSync(path.join(out,'browser-check.json'),JSON.stringify({passed:true,provider:'scripted local fixture',real_model_requests:0,checks:['supported topic','refusal before question request','pending refresh and task deduplication','saved quizzes and PDF preserved','red accessible alert','uncertain decision distinct from mismatch','malformed decision stops','synonym UI flow','blank topic skips extra request','390px no overflow','English UI','saved library after reload'],errors},null,2));
+  console.log('PASS: topic boundary UI, polling/reload, preserved quizzes, error states and mobile. Scripted provider only.');
+ }finally{if(browser)await browser.close();server.kill()}
+})().catch(e=>{console.error(e);process.exitCode=1});

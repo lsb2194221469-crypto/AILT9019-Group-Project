@@ -1,37 +1,39 @@
-# Local credentials
-config.json
-.generation-jobs/
-.example-runs/
-.evaluation-runs/
-.public-session.json
-.public-session.tmp
-.public-publish.json
-.public-maintainer.json
-.public-maintainer.tmp
-.public-maintainer.lock
-.public-autostart-disabled
-.public-host.log
-打开出题网页.url
-.env
-.env.*
-!.env.example
-
-# Dependencies and generated files
-.venv/
-venv/
-runtime/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-dist/
-build/
-uploads/
-*.pdf
+# Local credentials
+config.json
+.generation-jobs/
+.example-runs/
+.evaluation-runs/
+.public-session.json
+.public-session.tmp
+.public-publish.json
+.public-maintainer.json
+.public-maintainer.tmp
+.public-maintainer.lock
+.public-autostart-disabled
+.public-host.log
+打开出题网页.url
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated files
+.venv/
+venv/
+runtime/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+uploads/
+*.pdf
 !examples/math-notes.pdf
-*.zip
-
-# Editors / operating systems
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
+!examples/topic-boundary/*.pdf
+.topic-boundary-checks/
+*.zip
+
+# Editors / operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

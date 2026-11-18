@@ -10,7 +10,7 @@ import server
 from generation_jobs import GenerationJobs
 test_directory = tempfile.TemporaryDirectory(prefix='lecture-fixture-jobs-')
 server.JOBS = GenerationJobs(test_directory.name)
-provider_state = {'calls': 0, 'delay_ms': 0}
+provider_state = {'calls': 0, 'delay_ms': 0, 'topic_mode': 'normal', 'topic_calls': 0, 'question_calls': 0}
 provider_lock = threading.Lock()
 server.read_config = lambda: {'model':'fixture-model','api_key':'dummy','base_url':'https://example.invalid'}
 
@@ -21,6 +21,19 @@ def provider(path,payload,config):
     time.sleep(delay / 1000)
     content = payload['messages'][1]['content']
     request = json.loads(content[0]['text'] if isinstance(content,list) else content)
+    if payload['messages'][0]['content'].startswith('Check whether the supplied PDF material'):
+        with provider_lock:
+            provider_state['topic_calls'] += 1
+            mode = provider_state['topic_mode']
+        # Deliberately scripted QA outcomes, not a topic classifier or live evaluation.
+        decision = {'status': 'unsupported' if 'bayes' in request['topic_filter'].casefold() else 'supported', 'evidence': []}
+        if decision['status'] == 'supported':
+            decision['evidence'] = [{'page': request['source_pages'][0]['page'], 'quote': request['source_pages'][0]['text'][:400]}]
+        if mode == 'uncertain':
+            decision = {'status': 'uncertain', 'evidence': []}
+        return {'choices': [{'message': {'content': 'not JSON' if mode == 'malformed' else json.dumps(decision)}}]}
+    with provider_lock:
+        provider_state['question_calls'] += 1
     source = request['source_pages'][0]
     assert 'x^{2}' in source['math_context']
     questions = []
@@ -57,6 +70,7 @@ class FixtureHandler(server.Handler):
             body = json.loads(self.rfile.read(int(self.headers.get('Content-Length', 0))))
             with provider_lock:
                 provider_state['delay_ms'] = body.get('delay_ms', 0)
+                provider_state['topic_mode'] = body.get('topic_mode', 'normal')
             self.reply(200, {'ok': True})
             return
         if self.path == '/api/test/reset-documents':

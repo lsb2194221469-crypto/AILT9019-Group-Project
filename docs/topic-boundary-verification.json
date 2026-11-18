@@ -1,0 +1,334 @@
+{
+  "recorded_at": "2026-11-18T08:10:27.614402+00:00",
+  "provider": "configured cloud model",
+  "model": "deepseek-flash",
+  "live_requests": true,
+  "inputs": [
+    {
+      "path": "examples/topic-boundary/matrix-notes.pdf",
+      "sha256": "3202c4f7cd5865948278505355218e214db7b78a75028336430c491c202b472c"
+    },
+    {
+      "path": "examples/topic-boundary/probability-notes.pdf",
+      "sha256": "78e0636e94babc63d2f25cf90255aa613cb94a5b5ff6d4b8b32a0a4cf2878cbe"
+    }
+  ],
+  "cases": [
+    {
+      "name": "covered",
+      "topic": "matrix addition",
+      "pdfs": [
+        "matrix-notes.pdf"
+      ],
+      "expected": "generated",
+      "actual": "generated",
+      "result": {
+        "questions": [
+          {
+            "question": "Two matrices can be added only when they have the same number of rows and the same number of columns.",
+            "answer": "True",
+            "explanation": "The passage states that matrix addition is allowed only when both the row count and the column count match.",
+            "quote": "Two matrices can be added only when they have the same number of rows\nand the same number of columns. Add their corresponding entries.",
+            "page": 1,
+            "options": [
+              "True",
+              "False"
+            ],
+            "type": "tf",
+            "source_id": "matrix-notes.pdf",
+            "source_name": "matrix-notes.pdf"
+          }
+        ],
+        "sample": false,
+        "requested_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "actual_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "topic_check": {
+          "status": "supported"
+        },
+        "notice": "All pages (1 in total) were sent to the model without cutting any text. True or false 1/1 passed checks. Source quotes match the PDF text. Check formulas and answers against the original pages.",
+        "pages_used": [
+          1
+        ],
+        "reading": {
+          "mode": "all_pages_no_truncation",
+          "pages": 1,
+          "page_images": 1
+        }
+      },
+      "calls": [
+        {
+          "stage": "topic_check",
+          "usage": {
+            "prompt_tokens": 1678,
+            "completion_tokens": 207,
+            "total_tokens": 1885
+          }
+        },
+        {
+          "stage": "questions",
+          "usage": {
+            "prompt_tokens": 2321,
+            "completion_tokens": 307,
+            "total_tokens": 2628
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "paraphrase",
+      "topic": "adding two tables of numbers entry by entry",
+      "pdfs": [
+        "matrix-notes.pdf"
+      ],
+      "expected": "generated",
+      "actual": "generated",
+      "result": {
+        "questions": [
+          {
+            "question": "If two matrices have the same number of rows and columns, you add them by adding their matching entries.",
+            "answer": "True",
+            "explanation": "The notes say two matrices can be added only when they have the same number of rows and columns, and that their corresponding entries are added.",
+            "quote": "Two matrices can be added only when they have the same number of rows\nand the same number of columns. Add their corresponding entries.",
+            "page": 1,
+            "options": [
+              "True",
+              "False"
+            ],
+            "type": "tf",
+            "source_id": "matrix-notes.pdf",
+            "source_name": "matrix-notes.pdf"
+          }
+        ],
+        "sample": false,
+        "requested_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "actual_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "topic_check": {
+          "status": "supported"
+        },
+        "notice": "All pages (1 in total) were sent to the model without cutting any text. True or false 1/1 passed checks. Source quotes match the PDF text. Check formulas and answers against the original pages.",
+        "pages_used": [
+          1
+        ],
+        "reading": {
+          "mode": "all_pages_no_truncation",
+          "pages": 1,
+          "page_images": 1
+        }
+      },
+      "calls": [
+        {
+          "stage": "topic_check",
+          "usage": {
+            "prompt_tokens": 1684,
+            "completion_tokens": 268,
+            "total_tokens": 1952
+          }
+        },
+        {
+          "stage": "questions",
+          "usage": {
+            "prompt_tokens": 2327,
+            "completion_tokens": 334,
+            "total_tokens": 2661
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "outside_scope",
+      "topic": "Bayes' theorem and conditional probability",
+      "pdfs": [
+        "matrix-notes.pdf"
+      ],
+      "expected": "blocked",
+      "actual": "blocked",
+      "code": "topic_not_covered",
+      "message": "Your PDFs do not cover all parts of this topic. Choose another topic or upload matching notes. No quiz was made. Your saved quizzes are safe.",
+      "calls": [
+        {
+          "stage": "topic_check",
+          "usage": {
+            "prompt_tokens": 1683,
+            "completion_tokens": 33,
+            "total_tokens": 1716
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "partly_outside",
+      "topic": "matrix addition and Bayes' theorem",
+      "pdfs": [
+        "matrix-notes.pdf"
+      ],
+      "expected": "blocked",
+      "actual": "blocked",
+      "code": "topic_not_covered",
+      "message": "Your PDFs do not cover all parts of this topic. Choose another topic or upload matching notes. No quiz was made. Your saved quizzes are safe.",
+      "calls": [
+        {
+          "stage": "topic_check",
+          "usage": {
+            "prompt_tokens": 1682,
+            "completion_tokens": 36,
+            "total_tokens": 1718
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "blank",
+      "topic": "",
+      "pdfs": [
+        "matrix-notes.pdf"
+      ],
+      "expected": "generated",
+      "actual": "generated",
+      "result": {
+        "questions": [
+          {
+            "question": "True or false: two matrices can be added only if they have the same number of rows and the same number of columns.",
+            "answer": "True",
+            "explanation": "The notes state that two matrices can be added only when they have the same number of rows and the same number of columns.",
+            "quote": "Two matrices can be added only when they have the same number of rows\nand the same number of columns. Add their corresponding entries.",
+            "page": 1,
+            "options": [
+              "True",
+              "False"
+            ],
+            "type": "tf",
+            "source_id": "matrix-notes.pdf",
+            "source_name": "matrix-notes.pdf"
+          }
+        ],
+        "sample": false,
+        "requested_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "actual_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "topic_check": {
+          "status": "not_requested"
+        },
+        "notice": "All pages (1 in total) were sent to the model without cutting any text. True or false 1/1 passed checks. Source quotes match the PDF text. Check formulas and answers against the original pages.",
+        "pages_used": [
+          1
+        ],
+        "reading": {
+          "mode": "all_pages_no_truncation",
+          "pages": 1,
+          "page_images": 1
+        }
+      },
+      "calls": [
+        {
+          "stage": "questions",
+          "usage": {
+            "prompt_tokens": 2318,
+            "completion_tokens": 325,
+            "total_tokens": 2643
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "coverage_in_second_pdf",
+      "topic": "Bayes' theorem and conditional probability",
+      "pdfs": [
+        "matrix-notes.pdf",
+        "probability-notes.pdf"
+      ],
+      "expected": "generated",
+      "actual": "generated",
+      "result": {
+        "questions": [
+          {
+            "question": "For events \\(A\\) and \\(B\\) with \\(P(B)>0\\), is it true that \\(P(A|B)=\\frac{P(A \\text{ and } B)}{P(B)}\\)?",
+            "answer": "True",
+            "explanation": "The cited page gives the conditional probability formula \\(P(A|B)=P(A \\text{ and } B)/P(B)\\) when \\(P(B)>0\\).",
+            "quote": "For events A and B with P(B) > 0, P(A|B) = P(A and B) / P(B).",
+            "page": 1,
+            "options": [
+              "True",
+              "False"
+            ],
+            "type": "tf",
+            "source_id": "probability-notes.pdf",
+            "source_name": "probability-notes.pdf"
+          }
+        ],
+        "sample": false,
+        "requested_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "actual_counts": {
+          "mcq": 0,
+          "tf": 1,
+          "short": 0
+        },
+        "topic_check": {
+          "status": "supported"
+        },
+        "notice": "All pages (2 in total) were sent to the model without cutting any text. True or false 1/1 passed checks. Source quotes match the PDF text. Check formulas and answers against the original pages.",
+        "pages_used": [
+          1,
+          2
+        ],
+        "reading": {
+          "mode": "all_pages_no_truncation",
+          "pages": 2,
+          "page_images": 2
+        }
+      },
+      "calls": [
+        {
+          "stage": "topic_check",
+          "usage": {
+            "prompt_tokens": 3026,
+            "completion_tokens": 184,
+            "total_tokens": 3210
+          }
+        },
+        {
+          "stage": "questions",
+          "usage": {
+            "prompt_tokens": 3669,
+            "completion_tokens": 738,
+            "total_tokens": 4407
+          }
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "limits": "One run per case on small author-written notes. Pass means expected routing and valid output, not proven mathematical correctness or general topic-detection accuracy.",
+  "passed": true
+}

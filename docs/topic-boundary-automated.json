@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-11-18T08:11:59.559673+00:00",
+  "backend": {
+    "passed": true,
+    "tests": 69,
+    "provider": "simulated",
+    "command": "python -m unittest discover -s tests -p \"test_*.py\""
+  },
+  "browser": {
+    "passed": true,
+    "provider": "scripted local fixture",
+    "real_model_requests": 0,
+    "checks": [
+      "supported topic",
+      "refusal before question request",
+      "pending refresh and task deduplication",
+      "saved quizzes and PDF preserved",
+      "red accessible alert",
+      "uncertain decision distinct from mismatch",
+      "malformed decision stops",
+      "synonym UI flow",
+      "blank topic skips extra request",
+      "390px no overflow",
+      "English UI",
+      "saved library after reload"
+    ],
+    "errors": []
+  },
+  "client_error_checks": "passed",
+  "math_format_checks": "passed",
+  "live_cases": {
+    "record": "topic-boundary-verification.json",
+    "passed": 6,
+    "total": 6
+  },
+  "limit": "Small live integration check; not a broad semantic accuracy result."
+}

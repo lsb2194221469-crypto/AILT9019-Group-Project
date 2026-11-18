@@ -14,12 +14,12 @@ async function main() {
   context.fetch = async () => ({ok:false, status:503, json:async()=>{throw new SyntaxError('HTML');}});
   await assert.rejects(context.api('/api/jobs'), error => error.status === 503);
   context.fetch = async () => ({ok:true, status:200, json:async()=>null});
-  await assert.rejects(context.api('/api/jobs'), /数据格式/);
+  await assert.rejects(context.api('/api/jobs'), /unreadable response/);
   context.fetch = (_, options) => new Promise((resolve, reject) => {
     options.signal.addEventListener('abort', () => reject(Object.assign(new Error(), {name:'AbortError'})));
   });
   const hanging = context.api('/api/jobs'); abortTimer();
-  await assert.rejects(hanging, /连接超时/);
+  await assert.rejects(hanging, /connection timed out/i);
   assert.equal(cleared, 5);
 
   // A completed result that cannot be imported must terminate with its actual
@@ -28,7 +28,7 @@ async function main() {
   const taskContext = vm.createContext({
     api: async () => { calls++; return {status:'succeeded', result:{}}; },
     completeTask: async () => { throw new Error('PDF record missing'); },
-    sync: () => {}, persist: async () => {}, message: () => {},
+    sync: () => {}, persist: async () => {}, message: () => {}, showTaskError: () => {},
     $: () => ({replaceChildren: () => {}}),
     document: {createTextNode: () => ({})}, node: () => ({}),
     currentTask:null, busy:false});
@@ -37,6 +37,12 @@ async function main() {
   await taskContext.runTask(task);
   assert.equal(calls, 1); assert.equal(task.status, 'failed');
   assert.equal(task.error, 'PDF record missing'); assert.equal(taskContext.busy, false);
+  calls = 0;
+  taskContext.api = async () => { calls++; return {status:'failed',error:'Topic refused',code:'topic_not_covered'}; };
+  const refused = {id:'refused',status:'pending',submitted:true};
+  await taskContext.runTask(refused);
+  assert.equal(calls,1); assert.equal(refused.status,'failed');
+  assert.equal(refused.errorCode,'topic_not_covered');
   console.log('PASS: client success, HTTP error, HTML response, invalid payload, timeout cleanup, terminal import failure. No provider calls.');
 }
 main().catch(error => {console.error(error); process.exitCode = 1;});

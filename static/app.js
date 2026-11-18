@@ -24,6 +24,19 @@ function message(text, error = false) {
   $('message').hidden = !text;
   $('message').textContent = text;
   $('message').className = error ? 'error' : '';
+  $('message').setAttribute('role', error ? 'alert' : 'status');
+  $('message').setAttribute('aria-live', error ? 'assertive' : 'polite');
+}
+function showTaskError(error) {
+  if (!['topic_not_covered', 'topic_check_failed'].includes(error.code)) {
+    message(error.message, true); return;
+  }
+  message('', true);
+  const alert = $('message'); alert.hidden = false;
+  alert.classList.add('topic-alert');
+  alert.replaceChildren(node('strong', error.code === 'topic_not_covered' ? 'Topic not covered' : 'Topic check could not finish'), node('p', error.message));
+  alert.tabIndex = -1; alert.focus({preventScroll: true});
+  alert.scrollIntoView({behavior: 'auto', block: 'center'});
 }
 async function api(path, options) {
   const controller = new AbortController();
@@ -447,8 +460,8 @@ async function runTask(task) {
           catch (error) { error.status = 400; throw error; }
           break;
         }
-        if (status.status === 'failed') throw Object.assign(new Error(status.error), {status: 400});
-        message(status.status === 'queued' ? 'Your quiz is in the queue. You can switch tabs and return when it is ready.' : 'Your quiz is being made. You can switch tabs or refresh. The result will appear when you return.');
+        if (status.status === 'failed') throw Object.assign(new Error(status.error), {status: 400, code: status.code});
+        message(status.status === 'queued' ? 'Your quiz is in the queue. You can switch tabs and return when it is ready.' : task.settings?.topic?.trim() ? 'We are checking your topic against all PDFs, then making your quiz if it is covered. You can switch tabs or refresh.' : 'Your quiz is being made. You can switch tabs or refresh. The result will appear when you return.');
         await taskDelay(1500);
       } catch (error) {
         if (error.code === 'document_expired' && !task.submitted) {
@@ -457,7 +470,7 @@ async function runTask(task) {
           task.requestBody.document_ids = docs.map(doc => doc.serverId); await persist();
           continue;
         }
-        if ([400, 403, 404, 409].includes(error.status)) throw error;
+        if ([400, 403, 404, 409, 422].includes(error.status) || ['topic_not_covered', 'topic_check_failed'].includes(error.code)) throw error;
         // A lost response is ambiguous. Retry the same task ID, never a fresh
         // model request; the server deduplicates submissions before generation.
         message('Connection lost. We are trying to reconnect to your quiz. It will resume when you return or reconnect, without starting another request.');
@@ -465,7 +478,7 @@ async function runTask(task) {
       }
     }
   } catch (error) {
-    task.status = 'failed'; task.error = error.message; await persist(); message(error.message, true);
+    task.status = 'failed'; task.error = error.message; task.errorCode = error.code; await persist(); showTaskError(error);
   } finally {
     currentTask = null; busy = false;
     $('generate-btn').replaceChildren(document.createTextNode('Make my quiz'), node('span', '→')); sync();

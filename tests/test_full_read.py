@@ -29,8 +29,12 @@ class FullReadTests(unittest.TestCase):
                 'image_url':f'data:image/jpeg;base64,PAGE{i+1}'} for i in range(3)]
         q={'type':'tf','question':'Is context supplied?','answer':'True','explanation':'It is included.',
            'page':3,'quote':'Complete context. Complete context.','options':[]}
-        with patch.object(server,'read_config',return_value={'model':'deepseek-flash'}),patch.object(server,'provider_request',return_value={'choices':[{'message':{'content':json.dumps({'questions':[q]})}}]}) as provider:
+        decision = {'status':'supported','evidence':[{'page':1,'quote':'Complete context. Complete context.'}]}
+        responses = [{'choices':[{'message':{'content':json.dumps(item)}}]} for item in (decision, {'questions':[q]})]
+        with patch.object(server,'read_config',return_value={'model':'deepseek-flash'}),patch.object(server,'provider_request',side_effect=responses) as provider:
             result=server.generate(pages,'deepseek-flash','tf',1,'PAGE 1')
+        self.assertEqual(provider.call_count, 2)
+        self.assertEqual(provider.call_args_list[0].args[1]['messages'][1]['content'], provider.call_args.args[1]['messages'][1]['content'])
         parts=provider.call_args.args[1]['messages'][1]['content']
         sent=json.loads(parts[0]['text'])['source_pages']
         self.assertEqual([p['text'] for p in sent],[p['text'] for p in pages])

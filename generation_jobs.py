@@ -6,6 +6,7 @@ import re
 import threading
 import time
 from pathlib import Path
+from topic_guard import TopicBoundaryError
 
 
 class GenerationJobs:
@@ -100,6 +101,8 @@ class GenerationJobs:
                     self._save(job)
                 result = generate()
                 update = {'status': 'succeeded', 'result': result}
+            except TopicBoundaryError as error:
+                update = {'status': 'failed', 'error': str(error), 'code': error.code}
             except ValueError as error:
                 update = {'status': 'failed', 'error': str(error)}
             except Exception:
