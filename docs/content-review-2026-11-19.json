@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-19",
+  "reviewer": "OpenAI Codex, AI-assisted reread",
+  "reviewed": 41,
+  "independent_human_review": false,
+  "source_quotes_matched": 41,
+  "revision_or_clarification_proposals": 13,
+  "categories": {
+    "citation_incomplete": 3,
+    "explanation_precision": 3,
+    "missing_condition": 2,
+    "condition_clarity": 3,
+    "ambiguous_choice": 1,
+    "distractor_clarity": 1
+  },
+  "examples": [
+    "The standardised Chebyshev bound needs positive variance; zero variance gives a counterexample at k=2.",
+    "For a general random variable, P(X>t) and P(X>=t) differ at atoms; survival explanations should keep the strict inequality.",
+    "Finite support is also countable, so an MCQ must distinguish a general criterion from a sufficient special case."
+  ],
+  "original_live_results_unchanged": true,
+  "corrections_are_new_live_model_results": false,
+  "privacy": "Detailed course-derived questions, quotes and proposals stay local because redistribution permission is unconfirmed.",
+  "limits": "AI-assisted findings include wording and evidence issues, not just incorrect answers. These counts are not an error rate or an independently validated accuracy score."
+}

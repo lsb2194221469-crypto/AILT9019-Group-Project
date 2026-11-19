@@ -1,0 +1,61 @@
+{
+  "recorded_at": "2026-11-19T07:59:47.536524+00:00",
+  "repository": "https://github.com/lsb2194221469-crypto/AILT9019-Group-Project",
+  "commit": "562f7cca521f3b1793632ef2432d49dfa3e0914e",
+  "platform": "Windows x64",
+  "python": "Python 3.12.14",
+  "source": "New shallow Git clone from the public repository",
+  "dependencies": "New virtual environment; packages downloaded from official PyPI with no cache; requirements.txt installed including transitive dependencies",
+  "installation_note": "A non-responsive local system proxy blocked the first attempt. NO_PROXY=* was set only in the installation process; system settings were not changed.",
+  "initial_clone_failure": "With core.autocrlf=true, Git treated the ASCII-only sample PDF as text and changed its bytes. The original Git blob matched the reference hash. A committed .gitattributes binary rule fixed the issue; this record is from a second fresh clone.",
+  "sample_pdf_sha256": "021448756ec728f57dcbbd2cea507bbe590a750042f7970fb770a5eeb95c7aad",
+  "sample_hash_matches_reference": true,
+  "requirements_sha256": "15bd9653c8ee619ec4154ac5d71c664f43601ce6a88b57163e1196d78efe8633",
+  "installed_packages": [
+    "flatbuffers==25.12.19",
+    "networkx==3.7",
+    "numpy==2.5.5",
+    "onnxruntime==1.32.0",
+    "packaging==26.3",
+    "protobuf==7.36.2",
+    "psutil==7.2.2",
+    "pymupdf==2.0",
+    "pymupdf4llm==2.0",
+    "pymupdf_layout==2.0",
+    "pypdf==6.21.1",
+    "PyYAML==6.0.3",
+    "tabulate==0.10.0"
+  ],
+  "config_json_present": false,
+  "live_model_requests": 0,
+  "checks": [
+    {
+      "command": "python -m pip check",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m unittest discover -s tests -p test_*.py -v",
+      "exit_code": 0,
+      "tests": 69
+    },
+    {
+      "command": "python tools/reproduce_example.py",
+      "exit_code": 0,
+      "result": {
+        "passed": true,
+        "mode": "offline saved-output check",
+        "input_pages": 2,
+        "questions": 3,
+        "actual_counts": {
+          "mcq": 1,
+          "tf": 1,
+          "short": 1
+        },
+        "source_checks": "passed",
+        "api_called": false
+      }
+    }
+  ],
+  "passed": true,
+  "limits": "One Windows/Python environment. Automated provider responses are simulated; the saved-example check is offline, not new generation."
+}

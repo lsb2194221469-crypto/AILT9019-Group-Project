@@ -20,7 +20,7 @@ The English screenshots in `showcase-2026-11/` were captured using the author's 
 
 The embedded MP4 is the real 16 November demo already published in this repository. It uses the earlier Chinese interface and earlier input pipeline, automated browser actions and synthetic English narration. These facts are disclosed next to the player. It is not the four-member final presentation. Final presentation and demo YouTube links still need to be supplied in `submission_links.txt`; embedding this MP4 does not replace that submission requirement.
 
-The main result panels use `full-reading-verification.json`: 39 pages included in one real request, two accepted questions out of three requested, and 60 recorded automated backend checks. The earlier prompt comparison is separately dated and explicitly labelled as using the earlier input pipeline. Source-quote matching is not semantic accuracy; independent human content review is still pending.
+The main result panels use `full-reading-verification.json` for 39 pages included in one real request and two accepted questions out of three requested. The current count of 69 backend tests is recorded in `topic-boundary-automated.json` and independently rerun in the fresh-source/dependency check `fresh-reproduction-2026-11-19.json`. The six live scope cases remain a small integration check, not a broad accuracy measure. The earlier prompt comparison is separately dated and explicitly labelled as using the earlier input pipeline. Source-quote matching is not semantic accuracy; independent human content review is still pending.
 
 ## Check the page
 

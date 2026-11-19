@@ -54,6 +54,14 @@
 
 
 
+## Fresh reproduction check (19 November 2026)
+
+A new public Git clone and a new Windows x64 / Python 3.12 environment were checked with freshly downloaded dependencies from `requirements.txt`. Dependency checks, all **69 backend tests**, and the offline three-question example passed without an API key or paid model request. The [record](docs/fresh-reproduction-2026-11-19.json) lists the exact source commit and all installed package versions; the [test log](docs/fresh-reproduction-2026-11-19.log) preserves the output.
+
+The check exposed a Windows Git issue: `core.autocrlf=true` changed bytes in the ASCII-only example PDF. The repository now marks PDFs and media as binary in `.gitattributes`. A second fresh clone preserved the original PDF hash and passed the saved-example check. If an older clone reports a hash mismatch, use a fresh clone of the corrected repository. Do not edit the recorded hash to hide a changed input.
+
+Run `python -m unittest discover -s tests -p "test_*.py"` and `python tools/reproduce_example.py` after installation. The latter checks a saved result; `--live` makes a new, billed model request. This evidence covers one Windows/Python environment, not every operating system. The [latest content-review notes](docs/EVALUATION.md) distinguish AI-assisted mathematical findings from human verification.
+
 ## 主题范围红线（2026-11-18 更新）
 
 填写出题主题后，程序会先把全部 PDF 的文字、公式提示和页面图片交给模型检查范围。明确未覆盖任一请求主题时，显示 **Topic not covered** 红色警告并停止，不再调用出题接口；不会换个主题凑题。跨文件覆盖、同义表达及基于原文公式的简单应用可以通过。检查无法完成或无法确认时也停止，并显示不同的提示，不把连接故障说成主题不相关。

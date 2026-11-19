@@ -8,15 +8,15 @@ Can the real PDF-to-quiz path return the requested mixture with traceable source
 
 All eight batches below called the configured DeepSeek service through the production PDF extraction, source-combination, generation and validation functions. Two prompt variants used the same inputs/settings. The second variant requests complete supporting quotations, varied true/false statements, plausible distractors and applications where supported. No model was trained or fine-tuned. Single runs cannot establish that the prompt change caused the observed difference.
 
-| Batch | Requested | Initial accepted | Revised accepted | Initial seconds | Revised seconds |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Discrete | 6 | 6 | 6 | 17.665 | 37.593 |
-| Continuous | 6 | 5 | 6 | 16.889 | 19.404 |
-| Properties | 6 | 6 | 6 | 21.660 | 32.120 |
-| Three PDFs combined | 3 | 3 | 3 | 17.323 | 18.441 |
-| Total | 21 | 20 | 21 | | |
+| Batch | Requested | Initial accepted | Revised accepted |
+| --- | ---: | ---: | ---: |
+| Discrete | 6 | 6 | 6 |
+| Continuous | 6 | 5 | 6 |
+| Properties | 6 | 6 | 6 |
+| Three PDFs combined | 3 | 3 | 3 |
+| Total | 21 | 20 | 21 |
 
-Exact requested mixtures were returned in 3/4 initial batches and 4/4 revised batches. Median batch time was 17.494 and 25.762 seconds respectively, including any format retry. Each variant made five provider calls across four batches. These measurements are not an uptime/latency guarantee or a monetary cost estimate.
+Exact requested mixtures were returned in 3/4 initial batches and 4/4 revised batches. Each variant made five provider calls across four batches. Timing remains in the original machine-readable record; it is not used as an evaluation outcome here.
 
 ## Content audit and limitations
 
@@ -31,6 +31,18 @@ Five actual local parser cases were checked: non-PDF bytes, blank PDF, image-onl
 An actual lecture formula was extracted with an `R` instead of its integral and split bounds; the original PDF still contains the correct glyph. The app now displays the original page/excerpt rather than guessing a replacement. [Formatting evidence and tests](SOURCE_FORMAT.md) cover this repair.
 
 Live generation also exposed a listening local proxy returning HTTP 403 to HTTPS CONNECT. A preflight before credentials/source submission now bypasses a local proxy refusing the tunnel; direct provider access was verified. Working/remote proxies and redirect protection remain covered by tests. This is distinct from retrying a possibly billable generation after an ambiguous response.
+
+## Follow-up checks, 18–19 November
+
+The [real topic-scope check](topic-boundary-verification.json) used two author-written PDFs for six cases. Covered, paraphrased, blank and second-PDF-supported topics generated questions; unrelated and partly unrelated topics were blocked before question generation. All six matched expectations, using nine provider calls. These are a few development cases, not a general topic-detection accuracy score. [Behaviour and repeat steps](TOPIC_BOUNDARY.md) describe the extra quota and possible misclassification.
+
+A further AI-assisted reread covered all 41 saved lecture questions and recorded 13 revision or clarification proposals. They include incomplete quotations, an ambiguous distractor, missing positive-variance conditions in a standardised Chebyshev statement, and survival explanations that blur strict and non-strict inequalities. Some are wording or evidence issues rather than wrong reference answers. The [public aggregate](content-review-2026-11-19.json) contains no course excerpts. Detailed proposals remain local and never replace the original live results. No independent human review or semantic accuracy percentage is claimed.
+
+For example, when X is constant and k=2, sigma=0 makes the event |X-mu|>=k sigma certain, so the standardised bound of 1/4 cannot apply. Adding sigma>0 is necessary. Likewise, for X=1 and t=1, P(X>t)=0 whereas P(X>=t)=1. These examples show why a matching source quote alone is not sufficient quality assurance.
+
+The [19 November reproduction record](fresh-reproduction-2026-11-19.json) and [test log](fresh-reproduction-2026-11-19.log) verify a new public clone with freshly installed dependencies in a new Windows x64 / Python 3.12 environment: all 69 backend tests and the offline public example passed. No API key or new model call was used. The first clone exposed Windows line-ending conversion of an ASCII-only PDF; `.gitattributes` now preserves its bytes, verified in a second fresh clone. The record lists the source commit and installed transitive versions.
+
+The old boundary summary records the then-current 200-page cap. Current 80-page limits and complete-input checks are recorded separately in [FULL_READING.md](FULL_READING.md); historical logs were kept intact.
 
 ## Reproduce
 

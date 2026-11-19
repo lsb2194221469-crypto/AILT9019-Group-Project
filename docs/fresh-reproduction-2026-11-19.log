@@ -1,0 +1,95 @@
+$ python -m pip check
+No broken requirements found.
+
+
+$ python -m unittest discover -s tests -p test_*.py -v
+test_bad_model_output_is_actionable (test_api.ApiTests.test_bad_model_output_is_actionable) ... ok
+test_configuration_rejects_missing_key_and_insecure_endpoint (test_api.ApiTests.test_configuration_rejects_missing_key_and_insecure_endpoint) ... ok
+test_listening_proxy_that_refuses_https_is_bypassed_before_api_request (test_api.ApiTests.test_listening_proxy_that_refuses_https_is_bypassed_before_api_request) ... ok
+test_proxy_that_allows_https_remains_configured (test_api.ApiTests.test_proxy_that_allows_https_remains_configured) ... ok
+test_redirect_is_not_followed (test_api.ApiTests.test_redirect_is_not_followed) ... ok
+test_refused_local_proxy_uses_direct_connection_before_api_request (test_api.ApiTests.test_refused_local_proxy_uses_direct_connection_before_api_request) ... ok
+test_remote_proxy_is_never_probed_or_bypassed (test_api.ApiTests.test_remote_proxy_is_never_probed_or_bypassed) ... ok
+test_request_bearer_and_json_and_sanitized_errors (test_api.ApiTests.test_request_bearer_and_json_and_sanitized_errors) ... ok
+test_unresponsive_local_proxy_uses_direct_before_sending_request (test_api.ApiTests.test_unresponsive_local_proxy_uses_direct_before_sending_request) ... ok
+test_working_local_proxy_is_preserved (test_api.ApiTests.test_working_local_proxy_is_preserved) ... ok
+test_batch_citations_keep_pdf_identity_with_overlapping_page_numbers (test_app.QuizTests.test_batch_citations_keep_pdf_identity_with_overlapping_page_numbers) ... ok
+test_batch_context_preserves_all_ten_pdfs_in_full (test_app.QuizTests.test_batch_context_preserves_all_ten_pdfs_in_full) ... ok
+test_duplicate_and_invalid_answer_rejected (test_app.QuizTests.test_duplicate_and_invalid_answer_rejected) ... ok
+test_fabricated_quote_and_wrong_page_rejected (test_app.QuizTests.test_fabricated_quote_and_wrong_page_rejected) ... ok
+test_generation_uses_cloud_api_and_checks_provenance (test_app.QuizTests.test_generation_uses_cloud_api_and_checks_provenance) ... ok
+test_mcq_requires_four_distinct_options_and_matching_answer (test_app.QuizTests.test_mcq_requires_four_distinct_options_and_matching_answer) ... ok
+test_pdf_blank_and_invalid_fail_safely (test_app.QuizTests.test_pdf_blank_and_invalid_fail_safely) ... ok
+test_unsupported_model_output_does_not_substitute_sample (test_app.QuizTests.test_unsupported_model_output_does_not_substitute_sample) ... ok
+test_verified_quote_is_accepted (test_app.QuizTests.test_verified_quote_is_accepted) ... ok
+test_blank_middle_page_is_present_not_silently_skipped (test_full_read.FullReadTests.test_blank_middle_page_is_present_not_silently_skipped) ... ok
+test_combined_image_limit_refuses_before_calling_model (test_full_read.FullReadTests.test_combined_image_limit_refuses_before_calling_model) ... ok
+test_combined_page_limit_refuses_before_calling_model (test_full_read.FullReadTests.test_combined_page_limit_refuses_before_calling_model) ... ok
+test_combined_text_limit_refuses_before_calling_model (test_full_read.FullReadTests.test_combined_text_limit_refuses_before_calling_model) ... ok
+test_generation_sends_every_page_image_and_complete_text_despite_topic (test_full_read.FullReadTests.test_generation_sends_every_page_image_and_complete_text_despite_topic) ... ok
+test_long_page_short_page_and_last_page_survive_extraction (test_full_read.FullReadTests.test_long_page_short_page_and_last_page_survive_extraction) ... ok
+test_missing_page_image_refuses_instead_of_sending_partial_visual_input (test_full_read.FullReadTests.test_missing_page_image_refuses_instead_of_sending_partial_visual_input) ... ok
+test_disconnect_and_retry_use_one_independent_task (test_jobs.BackgroundTests.test_disconnect_and_retry_use_one_independent_task) ... ok
+test_failed_task_returns_sanitized_error_without_replay (test_jobs.BackgroundTests.test_failed_task_returns_sanitized_error_without_replay) ... ok
+test_invalid_or_conflicting_requests_do_not_generate (test_jobs.BackgroundTests.test_invalid_or_conflicting_requests_do_not_generate) ... ok
+test_restart_marks_incomplete_task_failed_and_expires_old_results (test_jobs.BackgroundTests.test_restart_marks_incomplete_task_failed_and_expires_old_results) ... ok
+test_counts_zero_limits_and_invalid_types (test_mixed_math.MixedMathTests.test_counts_zero_limits_and_invalid_types) ... ok
+test_generation_preserves_math_hints_and_reports_shortfall (test_mixed_math.MixedMathTests.test_generation_preserves_math_hints_and_reports_shortfall) ... ok
+test_malformed_model_type_does_not_discard_valid_questions (test_mixed_math.MixedMathTests.test_malformed_model_type_does_not_discard_valid_questions) ... ok
+test_mixed_quotas_duplicate_and_type_validation (test_mixed_math.MixedMathTests.test_mixed_quotas_duplicate_and_type_validation) ... ok
+test_oversized_model_option_is_rejected_without_losing_valid_question (test_mixed_math.MixedMathTests.test_oversized_model_option_is_rejected_without_losing_valid_question) ... ok
+test_pdf_position_recovers_scripts_but_does_not_guess_plain_digits (test_mixed_math.MixedMathTests.test_pdf_position_recovers_scripts_but_does_not_guess_plain_digits) ... ok
+test_empty_then_valid_retries_once_with_more_room (test_model_output.OutputTests.test_empty_then_valid_retries_once_with_more_room) ... ok
+test_fences_and_math_survive_without_repairs (test_model_output.OutputTests.test_fences_and_math_survive_without_repairs) ... ok
+test_incomplete_output_keeps_only_complete_supported_questions (test_model_output.OutputTests.test_incomplete_output_keeps_only_complete_supported_questions) ... ok
+test_invalid_json_is_bounded_and_reasoning_is_not_parsed (test_model_output.OutputTests.test_invalid_json_is_bounded_and_reasoning_is_not_parsed) ... ok
+test_network_failures_are_not_retried_as_format_errors (test_model_output.OutputTests.test_network_failures_are_not_retried_as_format_errors) ... ok
+test_truncated_fabricated_quote_still_fails_validation (test_model_output.OutputTests.test_truncated_fabricated_quote_still_fails_validation) ... ok
+test_bom_settings_and_supervisor_no_duplicate_spawn (test_public_publish.PublicPublishTests.test_bom_settings_and_supervisor_no_duplicate_spawn) ... ok
+test_concurrent_change_is_not_overwritten (test_public_publish.PublicPublishTests.test_concurrent_change_is_not_overwritten) ... ok
+test_helper_is_noninteractive_and_does_not_echo_secret (test_public_publish.PublicPublishTests.test_helper_is_noninteractive_and_does_not_echo_secret) ... ok
+test_missing_markers_and_untrusted_urls_refused (test_public_publish.PublicPublishTests.test_missing_markers_and_untrusted_urls_refused) ... ok
+test_only_two_links_are_published_in_one_nonforced_commit (test_public_publish.PublicPublishTests.test_only_two_links_are_published_in_one_nonforced_commit) ... ok
+test_unchanged_links_do_not_make_commits (test_public_publish.PublicPublishTests.test_unchanged_links_do_not_make_commits) ... ok
+test_address_discovery_excludes_loopback_public_and_link_local (test_sharing.SharingTests.test_address_discovery_excludes_loopback_public_and_link_local) ... ok
+test_hosts_origins_and_private_files (test_sharing.SharingTests.test_hosts_origins_and_private_files) ... ok
+test_owner_stop_requires_local_host_and_private_token (test_sharing.SharingTests.test_owner_stop_requires_local_host_and_private_token) ... ok
+test_public_https_origin_must_match_explicit_public_host (test_sharing.SharingTests.test_public_https_origin_must_match_explicit_public_host) ... ok
+test_shared_generation_uses_server_key_without_returning_it (test_sharing.SharingTests.test_shared_generation_uses_server_key_without_returning_it) ... ok
+test_aes_password_pdf_has_actionable_error_without_crypto_dependency (test_source_preview.SourcePreviewTests.test_aes_password_pdf_has_actionable_error_without_crypto_dependency) ... ok
+test_duplicate_and_rotated_passages_do_not_guess_a_crop (test_source_preview.SourcePreviewTests.test_duplicate_and_rotated_passages_do_not_guess_a_crop) ... ok
+test_http_preview_is_same_origin_and_does_not_use_provider (test_source_preview.SourcePreviewTests.test_http_preview_is_same_origin_and_does_not_use_provider) ... ok
+test_invalid_inputs_fail_without_model_calls (test_source_preview.SourcePreviewTests.test_invalid_inputs_fail_without_model_calls) ... ok
+test_lossy_extraction_displays_original_glyphs_not_rewritten_text (test_source_preview.SourcePreviewTests.test_lossy_extraction_displays_original_glyphs_not_rewritten_text) ... ok
+test_split_probability_name_still_locates_original_typography (test_source_preview.SourcePreviewTests.test_split_probability_name_still_locates_original_typography) ... ok
+test_uncertain_or_absent_passage_shows_whole_page (test_source_preview.SourcePreviewTests.test_uncertain_or_absent_passage_shows_whole_page) ... ok
+test_all_pdf_pages_and_images_reach_both_requests (test_topic_boundary.TopicBoundaryTests.test_all_pdf_pages_and_images_reach_both_requests) ... ok
+test_blank_topic_skips_extra_request (test_topic_boundary.TopicBoundaryTests.test_blank_topic_skips_extra_request) ... ok
+test_invalid_or_uncertain_decision_stops_without_claiming_mismatch (test_topic_boundary.TopicBoundaryTests.test_invalid_or_uncertain_decision_stops_without_claiming_mismatch) ... ok
+test_provider_failure_is_not_reported_as_topic_mismatch (test_topic_boundary.TopicBoundaryTests.test_provider_failure_is_not_reported_as_topic_mismatch) ... ok
+test_supported_topic_checks_then_generates (test_topic_boundary.TopicBoundaryTests.test_supported_topic_checks_then_generates) ... ok
+test_truncated_or_filtered_check_never_generates (test_topic_boundary.TopicBoundaryTests.test_truncated_or_filtered_check_never_generates) ... ok
+test_unsupported_topic_never_reaches_question_generation (test_topic_boundary.TopicBoundaryTests.test_unsupported_topic_never_reaches_question_generation) ... ok
+test_background_refusal_survives_retry_and_reload (test_topic_boundary.TopicHTTPTests.test_background_refusal_survives_retry_and_reload) ... ok
+test_direct_endpoint_returns_explicit_refusal (test_topic_boundary.TopicHTTPTests.test_direct_endpoint_returns_explicit_refusal) ... ok
+
+----------------------------------------------------------------------
+Ran 69 tests in 25.940s
+
+OK
+
+
+$ python tools/reproduce_example.py
+{
+  "passed": true,
+  "mode": "offline saved-output check",
+  "input_pages": 2,
+  "questions": 3,
+  "actual_counts": {
+    "mcq": 1,
+    "tf": 1,
+    "short": 1
+  },
+  "source_checks": "passed",
+  "api_called": false
+}
