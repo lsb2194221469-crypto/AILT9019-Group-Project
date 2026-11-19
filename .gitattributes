@@ -1,0 +1,12 @@
+# Keep document/media bytes intact, including ASCII-only PDFs on Windows.
+# Git may otherwise treat an ASCII PDF as text and apply core.autocrlf.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.docx binary
+*.zip binary
