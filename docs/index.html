@@ -29,7 +29,7 @@
       <p class="eyebrow"><span class="tiny-star" aria-hidden="true">✳</span> AILT9019 / GROUP 61 / 2026</p>
       <h1 id="hero-title">Your notes.<br>A better way<br>to <em>practise.</em></h1>
       <p class="hero-lead">Turn lecture PDFs into mixed practice questions. Try an answer, then check the page it came from.</p>
-      <div class="button-row"><a class="button button-dark" href="#demo"><span class="play-icon" aria-hidden="true">▶</span> Watch it work</a><a class="text-link" href="#features">Take a closer look <span aria-hidden="true">↘</span></a></div>
+      <div class="button-row"><a class="button button-dark" href="#demo"><span class="play-icon" aria-hidden="true">▶</span> See the demo steps</a><a class="text-link" href="#features">Take a closer look <span aria-hidden="true">↘</span></a></div>
       <p class="hero-note">Made for students revising from their own lecture notes.</p>
     </div>
     <figure class="hero-visual">
@@ -71,12 +71,13 @@
   </div></section>
 
   <section class="section wrap" id="demo" aria-labelledby="demo-title">
-    <div class="section-heading"><div><p class="eyebrow">SEE A REAL RUN</p><h2 id="demo-title">From a file to<br>“let me try that.”</h2></div><p>No setup needed to watch. This recording follows a real model request, then checks the answers and tries a file the app cannot read.</p></div>
-    <div class="demo-layout">
-      <div class="video-shell"><div class="video-bar"><span><span class="status-dot" aria-hidden="true"></span> RECORDED WALKTHROUGH</span><span>3:12</span></div><video controls playsinline preload="metadata" poster="showcase-2026-11/video-poster.svg" aria-label="Recorded PDF-to-quiz demo with English narration and captions"><source src="demo-2026-11-16/Lecture_Lab_Demo.mp4" type="video/mp4"><track kind="captions" src="demo-2026-11-16/captions.vtt" srclang="en" label="English" default><p>Your browser cannot play this video. <a href="demo-2026-11-16/Lecture_Lab_Demo.mp4">Open the demo video</a>.</p></video></div>
-      <aside class="demo-notes" aria-label="What the recording shows"><p class="eyebrow">WHAT TO LOOK FOR</p><ol><li><span>01</span><div><h3>Input</h3><p>A two-page PDF and one question of each type.</p></div></li><li><span>02</span><div><h3>Processing</h3><p>A real API request, including the wait for the result.</p></div></li><li><span>03</span><div><h3>Output</h3><p>Answers, source pages and saved work after a refresh.</p></div></li><li><span>04</span><div><h3>A boundary</h3><p>An image-only PDF is rejected with OCR guidance.</p></div></li></ol></aside>
-    </div>
-    <div class="demo-meta"><p>Recorded 16 Nov 2026 with the earlier Chinese interface and input pipeline. Current screenshots above show the English update. Browser actions are automated; English narration is synthetic. This is a demo, separate from the team presentation.</p><div><a href="demo-2026-11-16/transcript.txt">Read transcript</a><a href="demo-2026-11-16/Lecture_Lab_Demo.mp4">Open video ↗</a></div></div>
+    <div class="section-heading"><div><p class="eyebrow">THE DEMO</p><h2 id="demo-title">From PDF to<br>practice questions.</h2></div><p>The demo shows users selecting a PDF and choosing how many questions to generate. The results include reference answers and source passages for checking. It also shows the app refusing to generate questions when the topic entered in Focus on a topic is outside the uploaded PDF's content.</p></div>
+    <ol class="demo-outline" aria-label="Demo steps">
+      <li><span class="eyebrow">01 / CHOOSE</span><h3>Select a PDF</h3><p>Choose the source material for the questions.</p></li>
+      <li><span class="eyebrow">02 / SET</span><h3>Choose question counts</h3><p>Set how many questions to generate.</p></li>
+      <li><span class="eyebrow">03 / REVIEW</span><h3>Read answers and sources</h3><p>View the generated questions, reference answers and source passages.</p></li>
+      <li><span class="eyebrow">04 / CHECK THE TOPIC</span><h3>Refuse a topic outside the PDF</h3><p>When the requested topic is not covered, the app shows “Topic not covered” and stops question generation.</p></li>
+    </ol>
   </section>
 
   <section class="results-section" id="results" aria-labelledby="results-title"><div class="wrap section">
@@ -112,7 +113,7 @@
       <article class="team-card"><span class="member-initials mint" aria-hidden="true">DH</span><h3>Deng Hexuan</h3><p class="member-role">Data &amp; dataset</p><p>Found study materials and built the project dataset.</p></article>
       <article class="team-card"><span class="member-initials lilac" aria-hidden="true">LF</span><h3>Leo Fu</h3><p class="member-role">Code &amp; testing</p><p>Checked the program and code, found problems and fixed them.</p></article>
       <article class="team-card"><span class="member-initials yellow" aria-hidden="true">YM</span><h3>Yuen Tsun To Matthew</h3><p class="member-role">Design &amp; presentation</p><p>Worked on visual design, layout and the final presentation outline.</p></article>
-    </div><p class="caption-note">AI use: OpenAI Codex assisted with code, tests, analysis and writing. The demo uses synthetic narration. Human review remains necessary.</p>
+    </div><p class="caption-note">AI use: OpenAI Codex assisted with code, tests, analysis and writing. Human review remains necessary.</p>
   </div></section>
 
   <section class="section wrap" id="explore" aria-labelledby="explore-title">
