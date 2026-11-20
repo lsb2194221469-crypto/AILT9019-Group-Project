@@ -57,9 +57,15 @@ const checks=[];
     checks.push('Keyboard-operated FAQ');
     await page.locator('#demo').scrollIntoViewIfNeeded();
     assert.equal(await page.locator('.demo-outline li').count(),4);
-    assert.equal(await page.locator('video,iframe,a[href*="youtube.com"],a[href*="youtu.be"]').count(),0);
+    const finalDemo=page.locator('#final-demo-video');
+    assert.equal(await finalDemo.count(),1);
+    assert.equal(await finalDemo.getAttribute('href'),'https://www.youtube.com/watch?v=8RMKTD8L2ng');
+    assert.equal(await finalDemo.getAttribute('target'),'_blank');
+    assert((await finalDemo.getAttribute('rel')).includes('noopener'));
+    assert.equal(await page.locator('a[href*="youtube.com"],a[href*="youtu.be"]').count(),1);
+    assert.equal(await page.locator('a[href*="Nv7gvNffzcs"],video,iframe').count(),0);
     assert((await page.locator('#demo').innerText()).includes('Focus on a topic'));
-    checks.push('Current demo overview and no attached media, as requested');
+    checks.push('Final demo link only, no presentation link or embedded player');
     assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior),'auto');
     checks.push('Reduced-motion preference respected');
     const contrast=await page.evaluate(()=>{
